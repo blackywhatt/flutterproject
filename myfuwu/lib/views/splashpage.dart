@@ -41,9 +41,7 @@ class _SplashPageState extends State<SplashPage> {
         password = prefs.getString('password') ?? 'NA';
         http
             .post(
-              Uri.parse(
-                '${MyConfig.baseUrl}/myfuwu/api/login.php',
-              ),
+              Uri.parse('${MyConfig.baseUrl}/myfuwu/api/login.php'),
               body: {'email': email, 'password': password},
             )
             .then((response) {
@@ -127,7 +125,7 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/myfuwu.png', scale: 1),
+            Image.asset('assets/images/myfuwu.png', scale: 3),
             SizedBox(height: 20),
             CircularProgressIndicator(),
             SizedBox(height: 20),

@@ -1,10 +1,8 @@
 <?php
-    // Database connection parameters
     $servername = "localhost";
     $username = "root";
     $password = "";
-    $dbname = "pawpal_db";
-
+    $dbname = "myfuwudb";
     // Create connection
     $conn = new mysqli($servername, $username, $password, $dbname);
     // Check connection

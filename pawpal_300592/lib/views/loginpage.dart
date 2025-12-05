@@ -102,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
     if (width > 400) width = 400;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
+      appBar: AppBar(title: const Text("Login Page")),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -134,7 +134,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // PASSWORD
                     TextFormField(
                       controller: passwordController,
                       obscureText: !passwordVisible,

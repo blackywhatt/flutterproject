@@ -97,7 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
     if (width > 400) width = 400;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Register")),
+      appBar: AppBar(title: const Text("Register Page")),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -138,8 +138,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return "Enter email";
+                        }
                         if (!RegExp(
                           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                         ).hasMatch(value)) {

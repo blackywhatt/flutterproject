@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Image.asset('assets/images/myfuwu.png', scale: 1.5),
+                    child: Image.asset('assets/images/myfuwu.png', scale: 4.5),
                   ),
                   SizedBox(height: 5),
                   TextField(
@@ -236,9 +236,7 @@ class _LoginPageState extends State<LoginPage> {
               // Navigate to home page or dashboard
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => MainPage(user: user),
-                ),
+                MaterialPageRoute(builder: (context) => MainPage(user: user)),
               );
             } else {
               if (!mounted) return;
