@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data'; // Required for Web Images
 import 'package:flutter/foundation.dart'; // Required for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -24,7 +25,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
   // Dropdown Data
   List<String> petTypes = ['Cat', 'Dog', 'Rabbit', 'Other'];
   List<String> categories = ['Adoption', 'Donation Request', 'Help/Rescue'];
-  // Set to null to enforce "Please choose" and trigger validation
   String? selectedPetType;
   String? selectedCategory;
 
@@ -125,7 +125,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                             : mobileImages.length,
                         itemBuilder: (context, index) {
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.only(right: 8.0),
                             child: Stack(
                               children: [
                                 ClipRRect(
@@ -254,7 +254,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                       prefixIcon: Icon(Icons.description),
                       border: OutlineInputBorder(),
                     ),
-                    maxLines: 2,
+                    maxLines: 3,
                   ),
                   const SizedBox(height: 10),
 
@@ -268,10 +268,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.blueGrey,
-                        ), // Location Icon
+                        const Icon(Icons.location_on, color: Colors.blueGrey),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
@@ -392,10 +389,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Location services are disabled.")),
-      );
+      // Location services are not enabled don't continue
       return;
     }
 
@@ -403,14 +397,12 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Location permissions denied.")),
-        );
+        // Permissions are denied, do nothing
         return;
       }
     }
 
+    // When we reach here, permissions are granted and we can get the position
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -423,19 +415,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
 
   // --- SUBMIT DIALOG & LOGIC (Updated Validation) ---
   void showSubmitDialog() {
-    // 0. CHECK USER
-    if (widget.user == null ||
-        widget.user!.userId == null ||
-        widget.user!.userId == '0') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("User must be logged in to submit a pet."),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     // 1. Validation
     if (petNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -446,7 +425,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       );
       return;
     }
-    // Validation for Pet Type
     if (selectedPetType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -456,7 +434,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       );
       return;
     }
-    // Validation for Category
     if (selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -486,8 +463,16 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       return;
     }
     // Check images based on platform
-    final currentImageCount = kIsWeb ? webImages.length : mobileImages.length;
-    if (currentImageCount == 0) {
+    if (kIsWeb && webImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select at least 1 image"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (!kIsWeb && mobileImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please select at least 1 image"),
@@ -522,7 +507,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     );
   }
 
-  void submitPet() async {
+  void submitPet() {
     // Show Loading
     showDialog(
       context: context,
@@ -535,7 +520,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
 
     // Prepare Map
     Map<String, String> body = {
-      // 💡 User is guaranteed non-null after validation in showSubmitDialog
       'user_id': widget.user!.userId.toString(),
       'pet_name': petname,
       'pet_type': selectedPetType!,
@@ -545,72 +529,75 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       'lng': lng,
     };
 
-    try {
-      // Encode Images (Loop max 3)
-      if (kIsWeb) {
-        for (int i = 0; i < webImages.length; i++) {
-          body['image_${i + 1}'] = base64Encode(webImages[i]);
-        }
-      } else {
-        // 🏆 FIX 2: Mobile image encoding must be AWAITed if not using Sync method.
-        // It's safer to use an async loop with readAsBytes() instead of readAsBytesSync()
-        for (int i = 0; i < mobileImages.length; i++) {
-          // Use await to read bytes asynchronously
-          Uint8List bytes = await mobileImages[i].readAsBytes();
-          body['image_${i + 1}'] = base64Encode(bytes);
-        }
+    // Encode Images (Loop max 3)
+    if (kIsWeb) {
+      for (int i = 0; i < webImages.length; i++) {
+        body['image_${i + 1}'] = base64Encode(webImages[i]);
       }
-
-      // HTTP Request
-      final response = await http.post(
-        Uri.parse('${MyConfig.baseUrl}/pawpal/api/submit_pet.php'),
-        body: body,
-      );
-
-      if (!mounted) return;
-      Navigator.pop(context); // Close Loading
-
-      print("JSON Response (Submit Pet): ${response.body}");
-
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['status'] == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Pet submitted successfully"),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context); // Go back to Home
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                jsonResponse['message'] ??
-                    "Submission failed with unknown error.",
-              ),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Server Error: ${response.statusCode}"),
-            backgroundColor: Colors.red,
-          ),
+    } else {
+      for (int i = 0; i < mobileImages.length; i++) {
+        body['image_${i + 1}'] = base64Encode(
+          mobileImages[i].readAsBytesSync(),
         );
       }
-    } catch (e) {
-      if (!mounted) return;
-      // Close loading if still open
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Network/Processing Error: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
+
+    http
+        .post(
+          Uri.parse('${MyConfig.baseUrl}/pawpal/api/submit_pet.php'),
+          body: body,
+        )
+        .then((response) {
+          if (!mounted) return;
+          Navigator.pop(context); // Close Loading
+
+          // 💻 LOGGING THE RESPONSE TO DEBUG CONSOLE
+          print("--- HTTP POST Response ---");
+          print("URL: ${MyConfig.baseUrl}/pawpal/api/submit_pet.php");
+          print("Status Code: ${response.statusCode}");
+          print("Body (Raw JSON): ${response.body}");
+          print("--------------------------");
+
+          if (response.statusCode == 200) {
+            var jsonResponse = jsonDecode(response.body);
+
+            // 🔍 LOGGING PARSED JSON STATUS
+            print("Parsed JSON Status: ${jsonResponse['status']}");
+
+            if (jsonResponse['status'] == 'success') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Pet submitted successfully"),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.pop(context); // Go back to Home
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(jsonResponse['message']),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Server Error: ${response.statusCode}"),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        })
+        .catchError((e) {
+          if (!mounted) return;
+          Navigator.pop(context);
+          // ⚠️ LOGGING ERROR
+          print("HTTP Request Error: $e");
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+          );
+        });
   }
 }

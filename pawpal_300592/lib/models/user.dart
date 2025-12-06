@@ -24,6 +24,8 @@ class User {
     regDate = json['user_regdate'];
   }
 
+  get userName => null;
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['user_id'] = userId;

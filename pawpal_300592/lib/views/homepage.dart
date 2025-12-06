@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black,
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "Welcome, ${user.name ?? 'User'}!",
+                      "Welcome, ${user?.name ?? 'User'}!",
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
