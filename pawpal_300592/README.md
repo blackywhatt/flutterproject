@@ -2,7 +2,7 @@
 
 This repository contains the Flutter application and PHP backend API for the PawPal pet adoption and donation platform.
 
-## 📝 Table of Contents
+## Table of Contents
 
 1.  [Setup & Installation](#-setup--installation)
 2.  [API Explanation](#-api-explanation)
@@ -10,7 +10,7 @@ This repository contains the Flutter application and PHP backend API for the Paw
 
 ---
 
-## 💻 Setup & Installation
+## Setup & Installation
 
 Follow these steps to set up the Flutter application and the PHP/MySQL backend on your local machine using **XAMPP**.
 
@@ -58,7 +58,7 @@ Follow these steps to set up the Flutter application and the PHP/MySQL backend o
 
 ---
 
-## 🌐 API Explanation
+## API Explanation
 
 The backend consists of PHP scripts in the `api/` folder designed to handle all data interaction with the MySQL database.
 
@@ -72,7 +72,7 @@ The backend consists of PHP scripts in the `api/` folder designed to handle all 
 
 ---
 
-## 📦 Sample JSON Responses
+## Sample JSON Responses
 
 These examples illustrate the structure of data exchanged between the Flutter app and the PHP API.
 
@@ -80,11 +80,9 @@ These examples illustrate the structure of data exchanged between the Flutter ap
 
 This API returns an array of pet submission objects for the authenticated user.
 
-#### ✅ 1. Success Response 
+#### 1. Success Response 
+
+```json
 URL: http://10.29.106.140/pawpal/api/submit_pet.php
 Status Code: 200
 Body (Raw JSON): {"status":"success","message":"Pet submitted successfully","success":true}
-
-
-  }
-}
