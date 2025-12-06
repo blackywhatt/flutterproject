@@ -69,6 +69,9 @@ class _LoginPageState extends State<LoginPage> {
       },
     );
 
+    // 🔥 JSON DEBUG PRINT (Lecturer style)
+    print("JSON Response (Login): ${response.body}");
+
     var data = jsonDecode(response.body);
 
     if (data['status'] == 'success') {
@@ -120,6 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                         scale: 3.5,
                       ),
                     ),
+
                     TextFormField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -147,9 +151,11 @@ class _LoginPageState extends State<LoginPage> {
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                           ),
-                          onPressed: () => setState(
-                            () => passwordVisible = !passwordVisible,
-                          ),
+                          onPressed: () {
+                            setState(() {
+                              passwordVisible = !passwordVisible;
+                            });
+                          },
                         ),
                       ),
                       validator: (value) => (value == null || value.isEmpty)
@@ -178,6 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text("Login"),
                       ),
                     ),
+
                     const SizedBox(height: 10),
 
                     GestureDetector(
