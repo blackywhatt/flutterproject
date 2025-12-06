@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pawpal_300592/models/pet.dart'; // NEW
+import 'package:pawpal_300592/models/pet.dart';
 import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
 import 'package:pawpal_300592/views/loginpage.dart';
-import 'package:pawpal_300592/views/submitpetscreen.dart'; // NEW
+import 'package:pawpal_300592/views/submitpetscreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainScreen extends StatefulWidget {
@@ -17,10 +17,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // Lecturer's style variables
   late double screenWidth;
   List<Pet> myPetList = [];
-  // Mandatory: Status for empty/loading state
   String status = "Loading your submissions...";
 
   @override
@@ -29,7 +27,6 @@ class _MainScreenState extends State<MainScreen> {
     _loadMyPets();
   }
 
-  // Mandatory: Function to load user-specific data from API
   void _loadMyPets() async {
     if (widget.user == null || widget.user!.userId == '0') {
       if (!mounted) return;
@@ -45,23 +42,19 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
 
-    // Mandatory: Check !mounted before setState
     if (!mounted) return;
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
 
       if (jsonResponse['status'] == 'success') {
-        // Mandatory: Map JSON data to model list
         myPetList = List<Pet>.from(
           jsonResponse['data'].map((x) => Pet.fromJson(x)),
         );
-        setState(() {
-          // If successful, update the list
-        });
+        setState(() {});
       } else {
         setState(() {
-          // Mandatory: "No submissions yet." message
+          //"No submissions yet." message
           status = "No submissions yet.";
           myPetList = [];
         });
@@ -74,7 +67,7 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  // Existing logout function (Mandatory to keep)
+  //logout function
   void _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool remember = prefs.getBool("rememberMe") ?? false;
@@ -91,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Function to navigate to submission page and refresh on return
+  //navigate to submission page
   void _navigateAndSubmit() async {
     if (widget.user?.userId == '0') {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,14 +93,12 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
 
-    // Push the new screen
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SubmitPetScreen(user: widget.user),
       ),
     );
-    // Refresh the list after returning
     _loadMyPets();
   }
 
@@ -118,7 +109,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
-    // Mandatory: Adaptive UI limiting max width
     if (screenWidth > 600) screenWidth = 600;
 
     return Scaffold(
@@ -133,10 +123,9 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: Center(
         child: Container(
-          width: screenWidth, // Apply width limit
+          width: screenWidth,
           child: myPetList.isEmpty
               ? Center(
-                  // Show status/empty message
                   child: Text(status, style: const TextStyle(fontSize: 18)),
                 )
               : ListView.builder(
@@ -144,10 +133,8 @@ class _MainScreenState extends State<MainScreen> {
                   itemBuilder: (context, index) {
                     Pet pet = myPetList[index];
 
-                    // Decode image paths (Stored as a JSON string in DB)
                     List<String> imagePaths;
                     try {
-                      // Mandatory: Handle JSON decoding for image_paths
                       imagePaths = List<String>.from(
                         jsonDecode(pet.imagePaths ?? '[]'),
                       );
@@ -155,14 +142,12 @@ class _MainScreenState extends State<MainScreen> {
                       imagePaths = [];
                     }
 
-                    // Mandatory: Show a card for each pet
                     return Card(
                       margin: const EdgeInsets.symmetric(
                         vertical: 8,
                         horizontal: 16,
                       ),
                       child: ListTile(
-                        // Mandatory: First image as thumbnail (using Image.network with MyConfig.baseUrl)
                         leading: imagePaths.isNotEmpty
                             ? SizedBox(
                                 width: 70,
@@ -184,7 +169,6 @@ class _MainScreenState extends State<MainScreen> {
                                 color: Colors.grey,
                               ),
 
-                        // Mandatory: Pet name and Category
                         title: Text(
                           pet.petName ?? 'N/A',
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -195,7 +179,6 @@ class _MainScreenState extends State<MainScreen> {
                             Text(
                               'Type: ${pet.petType ?? 'N/A'} - Category: ${pet.category ?? 'N/A'}',
                             ),
-                            // Mandatory: Description excerpt
                             Text(
                               (pet.description?.length ?? 0) > 50
                                   ? '${pet.description!.substring(0, 50)}...'
@@ -213,7 +196,6 @@ class _MainScreenState extends State<MainScreen> {
                 ),
         ),
       ),
-      // Mandatory: Floating action button for submission
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateAndSubmit,
         label: const Text('Submit Pet'),

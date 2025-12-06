@@ -1,4 +1,3 @@
-// models/pet.dart
 class Pet {
   String? petId;
   String? userId;
@@ -6,7 +5,7 @@ class Pet {
   String? petType;
   String? category;
   String? description;
-  String? imagePaths; // JSON string of image paths
+  String? imagePaths;
   String? lat;
   String? lng;
   String? createdAt;

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data'; // Required for Web Images
-import 'package:flutter/foundation.dart'; // Required for kIsWeb
+import 'dart:typed_data'; //for Web Images
+import 'package:flutter/foundation.dart'; //for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -18,21 +18,21 @@ class SubmitPetScreen extends StatefulWidget {
 }
 
 class _SubmitPetScreenState extends State<SubmitPetScreen> {
-  // Controllers
+  // controllers
   TextEditingController petNameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
-  // Dropdown Data
+  // dropdown data
   List<String> petTypes = ['Cat', 'Dog', 'Rabbit', 'Other'];
   List<String> categories = ['Adoption', 'Donation Request', 'Help/Rescue'];
   String? selectedPetType;
   String? selectedCategory;
 
-  // Location Data
+  // location Data
   String lat = "";
   String lng = "";
 
-  // Image Data
+  // image Data
   List<File> mobileImages = [];
   List<Uint8List> webImages = [];
   final picker = ImagePicker();
@@ -62,7 +62,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // --- IMAGE PICKER SECTION (Max 3) ---
                   GestureDetector(
                     onTap: () {
                       int currentCount = kIsWeb
@@ -113,7 +112,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // --- IMAGE PREVIEW GRID ---
                   if ((kIsWeb && webImages.isNotEmpty) ||
                       (!kIsWeb && mobileImages.isNotEmpty))
                     SizedBox(
@@ -171,8 +169,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                     ),
                   const SizedBox(height: 10),
 
-                  // --- FORM FIELDS ---
-                  // Pet Name Field with Icon
                   TextField(
                     controller: petNameController,
                     decoration: const InputDecoration(
@@ -185,7 +181,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
 
                   Row(
                     children: [
-                      // Pet Type Dropdown with Icon and Null Value Handling
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           isExpanded: true,
@@ -214,7 +209,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // Category Dropdown with Icon and Null Value Handling
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           isExpanded: true,
@@ -246,7 +240,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Description Field with Icon
                   TextField(
                     controller: descriptionController,
                     decoration: const InputDecoration(
@@ -258,7 +251,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // --- LOCATION DISPLAY ---
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -291,8 +283,8 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- SUBMIT BUTTON ---
                   ElevatedButton(
+                    //submit button
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueGrey,
                       minimumSize: Size(screenWidth, 50),
@@ -317,7 +309,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     );
   }
 
-  // --- IMAGE PICKING LOGIC ---
   void pickimagedialog() {
     showDialog(
       context: context,
@@ -382,14 +373,12 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     }
   }
 
-  // --- GEOLOCATION LOGIC ---
   Future<void> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
       return;
     }
 
@@ -397,12 +386,10 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, do nothing
         return;
       }
     }
 
-    // When we reach here, permissions are granted and we can get the position
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -413,9 +400,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     });
   }
 
-  // --- SUBMIT DIALOG & LOGIC (Updated Validation) ---
   void showSubmitDialog() {
-    // 1. Validation
     if (petNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -482,7 +467,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       return;
     }
 
-    // 2. Confirmation Dialog
     showDialog(
       context: context,
       builder: (context) {
@@ -508,7 +492,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
   }
 
   void submitPet() {
-    // Show Loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -518,7 +501,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     String petname = petNameController.text.trim();
     String description = descriptionController.text.trim();
 
-    // Prepare Map
     Map<String, String> body = {
       'user_id': widget.user!.userId.toString(),
       'pet_name': petname,
@@ -529,7 +511,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       'lng': lng,
     };
 
-    // Encode Images (Loop max 3)
+    //image max 3
     if (kIsWeb) {
       for (int i = 0; i < webImages.length; i++) {
         body['image_${i + 1}'] = base64Encode(webImages[i]);
@@ -549,9 +531,8 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
         )
         .then((response) {
           if (!mounted) return;
-          Navigator.pop(context); // Close Loading
+          Navigator.pop(context);
 
-          // 💻 LOGGING THE RESPONSE TO DEBUG CONSOLE
           print("--- HTTP POST Response ---");
           print("URL: ${MyConfig.baseUrl}/pawpal/api/submit_pet.php");
           print("Status Code: ${response.statusCode}");
@@ -561,7 +542,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
           if (response.statusCode == 200) {
             var jsonResponse = jsonDecode(response.body);
 
-            // 🔍 LOGGING PARSED JSON STATUS
             print("Parsed JSON Status: ${jsonResponse['status']}");
 
             if (jsonResponse['status'] == 'success') {
@@ -571,7 +551,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.pop(context); // Go back to Home
+              Navigator.pop(context); //go back to HomePage
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -592,7 +572,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
         .catchError((e) {
           if (!mounted) return;
           Navigator.pop(context);
-          // ⚠️ LOGGING ERROR
           print("HTTP Request Error: $e");
 
           ScaffoldMessenger.of(context).showSnackBar(
