@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data'; // Required for Web Images
 import 'package:flutter/foundation.dart'; // Required for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -126,7 +125,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                             : mobileImages.length,
                         itemBuilder: (context, index) {
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
+                            padding: const EdgeInsets.only(right: 8),
                             child: Stack(
                               children: [
                                 ClipRRect(
@@ -261,7 +260,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                       prefixIcon: Icon(Icons.description), // ADDED ICON
                       border: OutlineInputBorder(),
                     ),
-                    maxLines: 3,
+                    maxLines: 2,
                   ),
                   const SizedBox(height: 10),
 

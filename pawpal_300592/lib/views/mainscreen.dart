@@ -27,17 +27,18 @@ class _MainScreenState extends State<MainScreen> {
   void _loadMyPets() async {
     final response = await http.get(
       Uri.parse(
-        '${MyConfig.baseUrl}/pawpal/api/get_my_pets.php?user_id=${widget.user.userId}',
+        "${MyConfig.baseUrl}/pawpal/api/get_my_pets.php?user_id=${widget.user.userId}",
       ),
     );
 
     if (!mounted) return;
 
     if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
-      if (jsonResponse['status'] == 'success') {
+      var jsondata = jsonDecode(response.body);
+
+      if (jsondata["status"] == "success") {
         myPetList = List<Pet>.from(
-          jsonResponse['data'].map((x) => Pet.fromJson(x)),
+          jsondata["data"].map((x) => Pet.fromJson(x)),
         );
         setState(() {});
       } else {
@@ -48,8 +49,7 @@ class _MainScreenState extends State<MainScreen> {
       }
     } else {
       setState(() {
-        status =
-            "Failed to load data from server. Status: ${response.statusCode}";
+        status = "Failed to load data. (${response.statusCode})";
       });
     }
   }
@@ -57,15 +57,17 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth > 600) screenWidth = 600;
+    if (screenWidth > 600) {
+      screenWidth = 600;
+    }
 
     return Scaffold(
       appBar: AppBar(
+        title: const Text("My Submitted Pets"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('My Submitted Pets'),
       ),
       body: Center(
         child: SizedBox(
@@ -78,7 +80,6 @@ class _MainScreenState extends State<MainScreen> {
                   itemCount: myPetList.length,
                   itemBuilder: (context, index) {
                     final pet = myPetList[index];
-                    final List<String> imagePaths = pet.imagePaths;
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
@@ -86,12 +87,12 @@ class _MainScreenState extends State<MainScreen> {
                         horizontal: 16,
                       ),
                       child: ListTile(
-                        leading: imagePaths.isNotEmpty
+                        leading: pet.imagePaths.isNotEmpty
                             ? SizedBox(
                                 width: 70,
                                 height: 70,
                                 child: Image.network(
-                                  "${MyConfig.baseUrl}/pawpal/${imagePaths[0]}",
+                                  "${MyConfig.baseUrl}/pawpal/${pet.imagePaths[0]}",
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
                                       const Icon(
@@ -107,22 +108,22 @@ class _MainScreenState extends State<MainScreen> {
                                 color: Colors.grey,
                               ),
                         title: Text(
-                          pet.petName ?? 'N/A',
+                          pet.petName ?? "N/A",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Type: ${pet.petType ?? 'N/A'} - Category: ${pet.category ?? 'N/A'}',
+                              "Type: ${pet.petType} - Category: ${pet.category}",
                             ),
                             Text(
                               (pet.description?.length ?? 0) > 50
-                                  ? '${pet.description!.substring(0, 50)}...'
-                                  : pet.description ?? '',
+                                  ? "${pet.description!.substring(0, 50)}..."
+                                  : pet.description ?? "",
                               style: const TextStyle(
-                                color: Colors.grey,
                                 fontSize: 12,
+                                color: Colors.grey,
                               ),
                             ),
                           ],
