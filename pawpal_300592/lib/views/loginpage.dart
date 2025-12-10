@@ -69,7 +69,6 @@ class _LoginPageState extends State<LoginPage> {
       },
     );
 
-    // 🔥 JSON DEBUG PRINT (Lecturer style)
     print("JSON Response (Login): ${response.body}");
 
     var data = jsonDecode(response.body);

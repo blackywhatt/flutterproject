@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data'; //for Web Images
 import 'package:flutter/foundation.dart'; //for kIsWeb
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -191,7 +190,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                               borderRadius: BorderRadius.circular(5.0),
                             ),
                           ),
-                          value: selectedPetType,
+                          initialValue: selectedPetType,
                           items: [
                             const DropdownMenuItem<String>(
                               value: null,
@@ -202,7 +201,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                                 value: value,
                                 child: Text(value),
                               );
-                            }).toList(),
+                            }),
                           ],
                           onChanged: (newValue) =>
                               setState(() => selectedPetType = newValue),
@@ -219,7 +218,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                               borderRadius: BorderRadius.circular(5.0),
                             ),
                           ),
-                          value: selectedCategory,
+                          initialValue: selectedCategory,
                           items: [
                             const DropdownMenuItem<String>(
                               value: null,
@@ -230,7 +229,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                                 value: value,
                                 child: Text(value),
                               );
-                            }).toList(),
+                            }),
                           ],
                           onChanged: (newValue) =>
                               setState(() => selectedCategory = newValue),
