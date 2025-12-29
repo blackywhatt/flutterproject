@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -32,138 +33,207 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    height = MediaQuery.of(context).size.height;
-    width = MediaQuery.of(context).size.width;
-    // print(width);
-    if (width > 400) {
-      width = 400;
-    } else {
-      width = width;
-    }
+    final media = MediaQuery.of(context);
+    final screenWidth = media.size.width;
+    final maxWidth = screenWidth > 420 ? 420.0 : screenWidth;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Login Page')),
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: const Color(0xFF1F3C88),
+        title: const Text(
+          "Login",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-            child: SizedBox(
-              width: width,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Image.asset('assets/images/myfuwu.png', scale: 4.5),
-                  ),
-                  SizedBox(height: 5),
-                  TextField(
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: visible,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          if (visible) {
-                            visible = false;
-                          } else {
-                            visible = true;
-                          }
-                          setState(() {});
-                        },
-                        icon: Icon(Icons.visibility),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // TITLE
+                    const Text(
+                      "Welcome Back 👋",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                      border: OutlineInputBorder(),
                     ),
-                  ),
-                  SizedBox(height: 5),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Login to continue using MyFuwu",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
 
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                    child: Row(
+                    const SizedBox(height: 28),
+
+                    // EMAIL
+                    TextField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: "Email",
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // PASSWORD
+                    TextField(
+                      controller: passwordController,
+                      obscureText: visible,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            visible ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() => visible = !visible);
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // REMEMBER ME
+                    Row(
                       children: [
-                        Text('Remember Me'),
                         Checkbox(
                           value: isChecked,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                           onChanged: (value) {
-                            isChecked = value!;
-                            setState(() {});
-                            if (isChecked) {
-                              if (emailController.text.isNotEmpty &&
-                                  passwordController.text.isNotEmpty) {
-                                prefUpdate(isChecked);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Preferences Stored"),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "Please fill your email and password",
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                                isChecked = false;
-                                setState(() {});
-                              }
-                            } else {
-                              prefUpdate(isChecked);
-                              if (emailController.text.isEmpty &&
-                                  passwordController.text.isEmpty) {
-                                return;
-                                // do nothing
-                              }
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Preferences Removed"),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              emailController.clear();
-                              passwordController.clear();
-                              setState(() {});
-                            }
+                            setState(() => isChecked = value!);
+                            prefUpdate(isChecked);
                           },
+                        ),
+                        const Text("Remember me"),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {
+                            // TODO: Forgot password
+                          },
+                          child: const Text("Forgot password?"),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        loginuser();
-                      },
-                      child: Text('Login'),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(),
+
+                    const SizedBox(height: 20),
+
+                    // LOGIN BUTTON
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F3C88),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      );
-                    },
-                    child: Text('Dont have an account? Register here.'),
-                  ),
-                  SizedBox(height: 5),
-                  Text('Forgot Password?'),
-                ],
+                        onPressed: loginuser,
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // REGISTER
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Don’t have an account? "),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Register",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F3C88),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Just Browsing? "),
+                        GestureDetector(
+                          onTap: () {
+                            User user = User(
+                              userId: '0',
+                              userEmail: 'guest@email.com',
+                              userPassword: 'guest',
+                              userOtp: '0000',
+                              userRegdate: '0000-00-00',
+                              userName: 'Guest',
+                              userPhone: '0000000000',
+                              userCredit: 0,
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MainPage(user: user),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Go Home",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F3C88),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -217,9 +287,10 @@ class _LoginPageState extends State<LoginPage> {
           body: {'email': email, 'password': password},
         )
         .then((response) {
+          log(response.body);
           if (response.statusCode == 200) {
             var jsonResponse = response.body;
-            // print(jsonResponse);
+            log(jsonResponse);
             var resarray = jsonDecode(jsonResponse);
             if (resarray['status'] == 'success') {
               //print(resarray['data'][0]);
@@ -229,10 +300,10 @@ class _LoginPageState extends State<LoginPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text("Login successful"),
-                  backgroundColor: Colors.green,
+                  // backgroundColor: Colors.green,
                 ),
               );
-              Navigator.pop(context);
+              // Navigator.pop(context);
               // Navigate to home page or dashboard
               Navigator.pushReplacement(
                 context,

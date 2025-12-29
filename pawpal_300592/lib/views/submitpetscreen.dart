@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -45,9 +46,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     _determinePosition(); // Automatically get location on load
   }
 
-  // ---------------------------------------------------------
-  // LOCATION LOGIC (FIXED)
-  // ---------------------------------------------------------
   Future<void> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -76,21 +74,35 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
 
     try {
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.best,
       );
-      setState(() {
-        lat = position.latitude.toString();
-        lng = position.longitude.toString();
-        locStatus = "Location Locked";
-      });
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (mounted) {
+        setState(() {
+          lat = position.latitude.toString();
+          lng = position.longitude.toString();
+
+          if (placemarks.isNotEmpty) {
+            Placemark place = placemarks[0];
+
+            // UPDATED: Using your friend's exact formatting logic
+            locStatus =
+                "${place.name},${place.postalCode},${place.locality},${place.administrativeArea},${place.country}";
+          } else {
+            locStatus = "Location Locked (No address found)";
+          }
+        });
+      }
     } catch (e) {
       setState(() => locStatus = "Error: $e");
     }
   }
 
-  // ---------------------------------------------------------
-  // IMAGE SELECTION LOGIC
-  // ---------------------------------------------------------
   Future<void> _selectImage(int index) async {
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -107,9 +119,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     }
   }
 
-  // ---------------------------------------------------------
-  // SUBMISSION LOGIC (FIXED LOCATION PASSING)
-  // ---------------------------------------------------------
   void _onSave() {
     if (!_formKey.currentState!.validate()) return;
     if (_image1 == null) {
@@ -188,9 +197,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // ---------------------------------------------------------
-  // UI BUILDER
-  // ---------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;

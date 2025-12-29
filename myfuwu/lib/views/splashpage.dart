@@ -89,6 +89,8 @@ class _SplashPageState extends State<SplashPage> {
                     userPassword: 'guest',
                     userOtp: '0000',
                     userRegdate: '0000-00-00',
+                    userCredit: 0,
+                    userAddress: 'NA',
                   );
                   Navigator.pushReplacement(
                     context,
@@ -108,6 +110,8 @@ class _SplashPageState extends State<SplashPage> {
             userPassword: 'guest',
             userOtp: '0000',
             userRegdate: '0000-00-00',
+            userCredit: 0,
+            userAddress: 'NA',
           );
           Navigator.pushReplacement(
             context,
@@ -120,16 +124,72 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      body: Center(
+      body: Container(
+        width: size.width,
+        height: size.height,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1F3C88), Color(0xFF2EC4B6)],
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/myfuwu.png', scale: 3),
-            SizedBox(height: 20),
-            CircularProgressIndicator(),
-            SizedBox(height: 20),
-            Text('Loading...'),
+            // APP ICON
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.handyman_outlined,
+                size: 60,
+                color: Color(0xFF1F3C88),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // APP NAME
+            const Text(
+              "MyFuWu",
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // TAGLINE
+            const Text(
+              "Local Services, In Hand",
+              style: TextStyle(fontSize: 16, color: Colors.white70),
+            ),
+
+            const SizedBox(height: 40),
+
+            // LOADING INDICATOR
+            const CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2.5,
+            ),
           ],
         ),
       ),
