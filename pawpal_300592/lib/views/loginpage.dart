@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
-import 'package:pawpal_300592/views/homepage.dart';
+import 'package:pawpal_300592/views/mainscreen.dart';
 import 'package:pawpal_300592/views/registerpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage(user: user)),
+        MaterialPageRoute(builder: (context) => MainScreen(user: user)),
       );
     } else {
       if (!mounted) return;
