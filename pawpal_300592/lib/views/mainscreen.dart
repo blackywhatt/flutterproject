@@ -1,15 +1,11 @@
-// ignore_for_file: prefer_typing_uninitialized_variables
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pawpal_300592/models/pet.dart';
 import 'package:pawpal_300592/models/user.dart';
+import 'package:pawpal_300592/views/petdetails.dart';
 import 'package:pawpal_300592/myconfig.dart';
-import 'package:pawpal_300592/views/loginpage.dart';
-import 'package:pawpal_300592/views/submitpetscreen.dart';
-import 'package:pawpal_300592/shared/mydrawer.dart'; // Ensure this exists
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pawpal_300592/shared/mydrawer.dart';
 
 class MainScreen extends StatefulWidget {
   final User? user;
@@ -20,341 +16,206 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late double screenWidth, screenHeight;
-  List<Pet> myPetList = [];
-  String status = "Loading your submissions...";
+  List<Pet> publicPetList = [];
+  String status = "Loading pets...";
 
-  int numofpage = 1;
-  int curpage = 1;
+  // Search and Filter variables
+  TextEditingController searchController = TextEditingController();
+  String selectedType = "All";
+  List<String> petTypes = ["All", "Cat", "Dog", "Other"];
 
   @override
   void initState() {
     super.initState();
-    _loadMyPets();
+    _loadPublicPets();
   }
 
-  void _loadMyPets() async {
-    if (widget.user == null || widget.user!.userId == '0') {
-      if (!mounted) return;
-      setState(() {
-        status = "Please log in to view your submissions.";
-      });
-      return;
-    }
+  void _loadPublicPets() async {
+    setState(() => status = "Searching...");
 
-    final response = await http.get(
-      Uri.parse(
-        '${MyConfig.baseUrl}/pawpal/api/get_my_pets.php?user_id=${widget.user!.userId}',
-      ),
-    );
+    // 1. Define the parameter
+    String typeParam = (selectedType == "All") ? "" : selectedType;
 
-    if (!mounted) return;
+    // 2. USE the parameter in the URL string below
+    String url =
+        "${MyConfig.baseUrl}/pawpal/api/get_all_pets.php"
+        "?search=${searchController.text}"
+        "&type=$typeParam"; // Changed from $selectedType to $typeParam
 
-    if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
-      if (jsonResponse['status'] == 'success') {
-        myPetList = List<Pet>.from(
-          jsonResponse['data'].map((x) => Pet.fromJson(x)),
-        );
-        setState(() {
-          status = "";
-        });
-      } else {
-        setState(() {
-          status = "No submissions yet.";
-          myPetList = [];
-        });
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            publicPetList = List<Pet>.from(
+              data['data'].map((x) => Pet.fromJson(x)),
+            );
+            status = "";
+          });
+        } else {
+          setState(() {
+            publicPetList = [];
+            status = "No pets found matching your criteria.";
+          });
+        }
       }
-    } else {
-      setState(() {
-        status = "Failed to load data from server.";
-      });
+    } catch (e) {
+      setState(() => status = "Error connecting to server.");
     }
-  }
-
-  void _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool remember = prefs.getBool("rememberMe") ?? false;
-    if (!remember) {
-      await prefs.remove("email");
-      await prefs.remove("password");
-    }
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
-  }
-
-  void _navigateAndSubmit() async {
-    if (widget.user?.userId == '0') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in to submit.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SubmitPetScreen(user: widget.user),
-      ),
-    );
-    _loadMyPets();
   }
 
   @override
   Widget build(BuildContext context) {
-    screenWidth = MediaQuery.of(context).size.width;
-    screenHeight = MediaQuery.of(context).size.height;
-    final contentWidth = screenWidth > 900 ? 900.0 : screenWidth;
-
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-
-      // This adds the 3-line menu (Drawer) to the left side
+      appBar: AppBar(
+        title: const Text("PawPal Discover"),
+        backgroundColor: const Color(0xFF1F3C88),
+        foregroundColor: Colors.white,
+      ),
       drawer: MyDrawer(user: widget.user),
-
-      appBar: buildModernAppBar(),
-
-      body: Center(
-        child: SizedBox(
-          width: contentWidth,
-          child: Column(
-            children: [
-              Expanded(
-                child: myPetList.isEmpty ? _buildEmptyState() : _buildPetList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-
-      bottomNavigationBar: myPetList.isNotEmpty
-          ? Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 6,
-                    color: Colors.black.withOpacity(0.08),
-                  ),
-                ],
-              ),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: numofpage,
-                itemBuilder: (context, index) {
-                  final isActive = (curpage - 1) == index;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: isActive
-                            ? const Color(0xFF1F3C88)
-                            : Colors.grey.shade200,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          curpage = index + 1;
-                          _loadMyPets();
-                        });
-                      },
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          color: isActive ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          : null,
-
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF2EC4B6),
-        onPressed: _navigateAndSubmit,
-        label: const Text('New Service', style: TextStyle(color: Colors.white)),
-        icon: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-
-  AppBar buildModernAppBar() {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: const Color(0xFF1F3C88),
-      foregroundColor: Colors.white,
-      // The drawer icon (3 lines) will automatically appear here because we added "drawer" to Scaffold
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            "PawPal",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            "Your One Stop Services",
-            style: TextStyle(fontSize: 11, color: Colors.white70),
-          ),
-        ],
-      ),
-      actions: [
-        _buildAppBarIcon(icon: Icons.search, onTap: () {}, tooltip: "Search"),
-        _buildAppBarIcon(
-          icon: Icons.refresh,
-          onTap: _loadMyPets,
-          tooltip: "Refresh",
-        ),
-        _buildAppBarIcon(
-          icon: Icons.logout,
-          onTap: widget.user?.userId != '0' ? _logout : () {},
-          tooltip: "Logout",
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  Widget _buildAppBarIcon({
-    required IconData icon,
-    required VoidCallback onTap,
-    String? tooltip,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 18),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPetList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(10),
-      itemCount: myPetList.length,
-      itemBuilder: (context, index) {
-        Pet pet = myPetList[index];
-        List<String> imagePaths = [];
-        try {
-          imagePaths = List<String>.from(jsonDecode(pet.imagePaths ?? '[]'));
-        } catch (e) {
-          imagePaths = [];
-        }
-
-        return Card(
-          elevation: 3,
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
+      body: Column(
+        children: [
+          // SEARCH & FILTER SECTION
+          Padding(
+            padding: const EdgeInsets.all(10.0),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 110,
-                    height: 90,
-                    color: Colors.grey.shade200,
-                    child: imagePaths.isNotEmpty
-                        ? Image.network(
-                            '${MyConfig.baseUrl}/${imagePaths[0]}',
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.pets, color: Colors.grey),
-                          )
-                        : const Icon(Icons.pets, color: Colors.grey),
-                  ),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pet.petName ?? 'N/A',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: "Search pet name...",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        pet.description ?? '',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F3C88).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          pet.petType ?? 'N/A',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF1F3C88),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+                    onSubmitted: (_) => _loadPublicPets(),
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey,
+                const SizedBox(width: 10),
+                DropdownButton<String>(
+                  value: selectedType,
+                  items: petTypes.map((String type) {
+                    return DropdownMenuItem(value: type, child: Text(type));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedType = value!;
+                      _loadPublicPets();
+                    });
+                  },
                 ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.search, size: 72, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          Text(
-            status,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
+          // LIST OF PETS
+          Expanded(
+            child: publicPetList.isEmpty
+                ? Center(child: Text(status))
+                : GridView.builder(
+                    padding: const EdgeInsets.all(10),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // 2 cards per row
+                          childAspectRatio: 0.75,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                    itemCount: publicPetList.length,
+                    itemBuilder: (context, index) {
+                      Pet pet = publicPetList[index];
+                      // Assume first image in list for thumbnail
+                      String imagePath = "";
+                      try {
+                        List<dynamic> images = jsonDecode(
+                          pet.imagePaths ?? '[]',
+                        );
+                        if (images.isNotEmpty) imagePath = images[0];
+                      } catch (e) {}
+
+                      return Card(
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: InkWell(
+                          // Inside MainScreen.dart (the GridView/ListView itemBuilder)
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PetDetails(
+                                  pet: pet,
+                                  user:
+                                      widget.user, // THIS IS THE IMPORTANT LINE
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Image.network(
+                                  "${MyConfig.baseUrl}/$imagePath",
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Icon(Icons.pets, size: 50),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      pet.petName ?? "Unknown",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "${pet.petType}",
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // Displaying Listing Category instead of Age
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.shade100,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Text(
+                                        pet.category ?? "General",
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

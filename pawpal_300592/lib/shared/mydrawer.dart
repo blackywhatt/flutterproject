@@ -3,6 +3,8 @@ import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/shared/animated_route.dart'; // 1. Import the animation
 import 'package:pawpal_300592/views/loginpage.dart';
 import 'package:pawpal_300592/views/mainscreen.dart';
+import 'package:pawpal_300592/views/mydonationscreen.dart';
+import 'package:pawpal_300592/views/mypetscreen.dart';
 import 'package:pawpal_300592/views/profilepage.dart';
 import 'package:pawpal_300592/views/settingpage.dart';
 
@@ -44,13 +46,13 @@ class _MyDrawerState extends State<MyDrawer> {
             leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
             onTap: () {
-              Navigator.pop(context); // Close drawer
+              Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
                 AnimatedRoute.slideFromRight(
                   MainScreen(user: widget.user),
                 ), // 2. Use animation
-              );
+              ); // Close drawer
             },
           ),
 
@@ -60,7 +62,32 @@ class _MyDrawerState extends State<MyDrawer> {
             title: const Text('My Pets'),
             onTap: () {
               Navigator.pop(context);
-              // When you create MyServicePage, use AnimatedRoute here too
+              Navigator.pushReplacement(
+                context,
+                AnimatedRoute.slideFromRight(
+                  MyPetScreen(user: widget.user),
+                ), // 2. Use animation
+              );
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.volunteer_activism_outlined),
+            title: const Text('My Donations'),
+            onTap: () {
+              // Check if logged in
+              if (widget.user?.userId == '0' || widget.user == null) {
+                Navigator.pop(context);
+                _showLoginDialog(context);
+              } else {
+                Navigator.pop(context); // Close drawer
+                Navigator.push(
+                  context,
+                  AnimatedRoute.slideFromRight(
+                    MyDonationScreen(user: widget.user!), // Navigate to history
+                  ),
+                );
+              }
             },
           ),
 
