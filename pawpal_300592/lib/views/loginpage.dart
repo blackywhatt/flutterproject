@@ -199,6 +199,35 @@ class _LoginPageState extends State<LoginPage> {
                         "Don't have an account? Register here.",
                       ),
                     ),
+                    const SizedBox(height: 20), // Give it some space
+
+                    TextButton(
+                      onPressed: () {
+                        // Create the dummy guest user
+                        User guestUser = User(
+                          userId: "0",
+                          name: "Guest",
+                          email: "Not Logged In",
+                        );
+
+                        // Navigate to MainScreen
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MainScreen(user: guestUser),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Continue as Guest",
+                        style: TextStyle(
+                          color: Color(0xFF1F3C88),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

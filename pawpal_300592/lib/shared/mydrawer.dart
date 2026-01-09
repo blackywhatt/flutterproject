@@ -27,9 +27,9 @@ class _MyDrawerState extends State<MyDrawer> {
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
               child: Text(
-                widget.user?.name != null && widget.user!.name!.isNotEmpty
+                widget.user?.userId != "0" && widget.user?.name != null
                     ? widget.user!.name![0].toUpperCase()
-                    : "G",
+                    : "G", // 'G' for Guest
                 style: const TextStyle(
                   fontSize: 24,
                   color: Color(0xFF1F3C88),
@@ -37,8 +37,16 @@ class _MyDrawerState extends State<MyDrawer> {
                 ),
               ),
             ),
-            accountName: Text(widget.user?.name ?? 'Guest'),
-            accountEmail: Text(widget.user?.email ?? 'guest@email.com'),
+            accountName: Text(
+              widget.user?.userId == "0"
+                  ? 'Guest User'
+                  : (widget.user?.name ?? 'Guest'),
+            ),
+            accountEmail: Text(
+              widget.user?.userId == "0"
+                  ? 'Login to join the community'
+                  : (widget.user?.email ?? ''),
+            ),
           ),
 
           // HOME
@@ -61,13 +69,16 @@ class _MyDrawerState extends State<MyDrawer> {
             leading: const Icon(Icons.pets_outlined),
             title: const Text('My Pets'),
             onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
-                AnimatedRoute.slideFromRight(
-                  MyPetScreen(user: widget.user),
-                ), // 2. Use animation
-              );
+              if (widget.user?.userId == '0' || widget.user == null) {
+                Navigator.pop(context);
+                _showLoginDialog(context); // Block guests from seeing "My Pets"
+              } else {
+                Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  AnimatedRoute.slideFromRight(MyPetScreen(user: widget.user)),
+                );
+              }
             },
           ),
 
@@ -131,16 +142,38 @@ class _MyDrawerState extends State<MyDrawer> {
           ),
 
           // LOGOUT
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          if (widget.user?.userId == '0')
+            ListTile(
+              leading: const Icon(Icons.login, color: Color(0xFF1F3C88)),
+              title: const Text(
+                'Login / Register',
+                style: TextStyle(
+                  color: Color(0xFF1F3C88),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  AnimatedRoute.slideFromRight(const LoginPage()),
+                );
+              },
+            )
+          else
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                _showLogoutDialog(context);
+              },
             ),
-            onTap: () {
-              _showLogoutDialog(context);
-            },
-          ),
 
           const Spacer(),
           const Padding(

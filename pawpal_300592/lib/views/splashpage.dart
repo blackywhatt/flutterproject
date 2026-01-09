@@ -52,9 +52,18 @@ class _SplashPageState extends State<SplashPage> {
     // Otherwise, show splash for 2 seconds then go to Login
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
+
+    // Create a guest user object
+    User guestUser = User(
+      userId: "0",
+      name: "Guest",
+      email: "Not Logged In",
+      // Add other fields from your User model as empty strings if needed
+    );
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+      MaterialPageRoute(builder: (context) => MainScreen(user: guestUser)),
     );
   }
 

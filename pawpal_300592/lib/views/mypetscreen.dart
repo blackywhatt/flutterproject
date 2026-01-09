@@ -331,11 +331,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey,
-                ),
               ],
             ),
           ),

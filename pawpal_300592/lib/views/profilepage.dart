@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
@@ -22,8 +23,9 @@ class _ProfilePageState extends State<ProfilePage> {
   final phoneController = TextEditingController();
 
   bool isLoading = false;
-  File? _image; // To store the selected image file
+  File? _image;
   final picker = ImagePicker();
+  DateFormat dateFormat = DateFormat('dd/MM/yyyy HH:mm a');
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
     phoneController.text = widget.user.phone ?? '';
   }
 
+  // ================= IMAGE SELECTION =================
   Future<void> _selectImage() async {
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -51,6 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // ================= UPDATE PROFILE =================
   Future<void> _updateProfile() async {
     if (nameController.text.isEmpty || phoneController.text.isEmpty) {
       _showSnackBar("Please fill in all fields", Colors.red);
@@ -59,65 +63,82 @@ class _ProfilePageState extends State<ProfilePage> {
 
     setState(() => isLoading = true);
 
-    // Convert image to base64 if a new one was picked
     String base64Image = "";
     if (_image != null) {
       base64Image = base64Encode(_image!.readAsBytesSync());
     }
 
     try {
-      final response = await http.post(
-        Uri.parse('${MyConfig.baseUrl}/pawpal/api/updateprofile.php'),
-        body: {
-          'user_id': widget.user.userId,
-          'user_name': nameController.text,
-          'user_phone': phoneController.text,
-          'image': base64Image, // Sending the photo
-        },
-      );
+      final response = await http
+          .post(
+            Uri.parse('${MyConfig.baseUrl}/pawpal/api/update_profile.php'),
+            body: {
+              'user_id': widget.user.userId,
+              'user_name': nameController.text,
+              'user_phone': phoneController.text,
+              'image': base64Image,
+            },
+          )
+          .timeout(const Duration(seconds: 10)); // Add timeout for stability
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         if (data['status'] == 'success') {
           _showSnackBar("Profile updated successfully", Colors.green);
-          loadProfile(); // Refresh and save to SharedPreferences
+          // Call loadProfile and WAIT for it to finish
+          await loadProfile();
+        } else {
+          _showSnackBar("Update failed: ${data['message']}", Colors.red);
+          setState(() => isLoading = false);
         }
       }
     } catch (e) {
-      log(e.toString());
+      log("Update Error: $e");
+      _showSnackBar("Connection error", Colors.red);
+      setState(() => isLoading = false);
     }
-    setState(() => isLoading = false);
   }
 
-  // ================= REFRESH & SAVE SESSION =================
-  void loadProfile() {
+  // ================= REFRESH & SESSION MANAGEMENT =================
+  Future<void> loadProfile() async {
     setState(() => isLoading = true);
-    http
-        .get(
-          Uri.parse(
-            '${MyConfig.baseUrl}/pawpal/api/getuserdetails.php?userid=${widget.user.userId}',
-          ),
-        )
-        .then((response) async {
-          if (response.statusCode == 200) {
-            var resarray = jsonDecode(response.body);
-            if (resarray['status'] == 'success') {
-              // 1. Update the local User object
-              User updatedUser = User.fromJson(resarray['data']);
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '${MyConfig.baseUrl}/pawpal/api/get_user_details.php?userid=${widget.user.userId}',
+        ),
+      );
 
-              // 2. Save to SharedPreferences (Task Requirement)
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.setString('user', jsonEncode(updatedUser.toJson()));
-
-              setState(() {
-                widget.user = updatedUser;
-                _loadUserData();
-                _image = null; // Reset temp image since it's now on server
-              });
-            }
+      if (response.statusCode == 200) {
+        var resarray = jsonDecode(response.body);
+        if (resarray['status'] == 'success') {
+          // IMPORTANT: Usually PHP returns data as an array [ {...} ]
+          // We take the first element index [0]
+          var userData = resarray['data'];
+          if (userData is List && userData.isNotEmpty) {
+            userData = userData[0];
           }
-          setState(() => isLoading = false);
-        });
+
+          User updatedUser = User.fromJson(userData);
+
+          // Update SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('user', jsonEncode(updatedUser.toJson()));
+
+          // Update UI State
+          setState(() {
+            widget.user = updatedUser;
+            _loadUserData();
+            _image =
+                null; // Clear the local file so it loads the new network image
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      log("Load Profile Error: $e");
+      setState(() => isLoading = false);
+    }
   }
 
   void _showSnackBar(String msg, Color color) {
@@ -163,33 +184,48 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        // PHOTO SELECTION SECTION
+                        // AVATAR SECTION WITH CAMERA ICON
                         GestureDetector(
                           onTap: _selectImage,
                           child: Stack(
                             children: [
                               CircleAvatar(
-                                radius: 60,
+                                radius: 50,
                                 backgroundColor: const Color(0xFF1F3C88),
-                                backgroundImage: _image != null
-                                    ? FileImage(_image!) as ImageProvider
-                                    : NetworkImage(
-                                        "${MyConfig.baseUrl}/pawpal/uploads/profile/${widget.user.userId}.jpg?t=${DateTime.now().millisecondsSinceEpoch}",
-                                      ),
-                                child:
-                                    (_image == null && widget.user.name != null)
-                                    ? null // Only show initials if no image exists
-                                    : null,
+                                child: ClipOval(
+                                  child: _image != null
+                                      ? Image.file(
+                                          _image!,
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                        )
+                                      : Image.network(
+                                          "${MyConfig.baseUrl}/pawpal/uploads/profile/${widget.user.userId}.jpg?t=${DateTime.now().millisecondsSinceEpoch}",
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                // This shows if the 404 error happens
+                                                return const Icon(
+                                                  Icons.person,
+                                                  size: 50,
+                                                  color: Colors.white,
+                                                );
+                                              },
+                                        ),
+                                ),
                               ),
                               const Positioned(
                                 bottom: 0,
                                 right: 0,
                                 child: CircleAvatar(
                                   backgroundColor: Colors.white,
-                                  radius: 18,
+                                  radius: 15,
                                   child: Icon(
                                     Icons.camera_alt,
-                                    size: 20,
+                                    size: 18,
                                     color: Color(0xFF1F3C88),
                                   ),
                                 ),
@@ -204,6 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         const Divider(height: 30),
 
+                        // USER INPUT FIELDS
                         _inputField(
                           controller: nameController,
                           label: "Name",
@@ -257,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // (Keep your existing _readonlyField and _inputField helper widgets here)
+  // ================= HELPERS FROM LECTURER =================
   Widget _readonlyField(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),

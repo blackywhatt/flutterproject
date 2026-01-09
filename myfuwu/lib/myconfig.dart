@@ -1,4 +1,4 @@
 class MyConfig {
   static const String baseUrl =
-      "http://10.29.109.30"; //local server, can be changed to public IP
+      "http://10.19.24.159"; //local server, can be changed to public IP
 }

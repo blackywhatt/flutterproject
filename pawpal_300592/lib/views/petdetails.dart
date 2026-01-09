@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:pawpal_300592/models/pet.dart';
 import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
+import 'package:pawpal_300592/views/loginpage.dart';
 
 class PetDetails extends StatefulWidget {
   final Pet pet;
@@ -72,7 +73,7 @@ class _PetDetailsState extends State<PetDetails> {
 
                   const SizedBox(height: 30),
 
-                  // BUTTON 1: REQUEST TO ADOPT
+                  // BUTTON 1: REQUEST TO ADOPT (Always visible)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -88,26 +89,27 @@ class _PetDetailsState extends State<PetDetails> {
                     ),
                   ),
 
-                  const SizedBox(height: 10),
-
-                  // BUTTON 2: DONATION (Added for Task 3)
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF1F3C88)),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      onPressed: _showDonationForm,
-                      child: const Text(
-                        "Donate Help (Food/Med/Cash)",
-                        style: TextStyle(
-                          color: Color(0xFF1F3C88),
-                          fontSize: 16,
+                  // BUTTON 2: DONATION (Conditional - only for donation requests)
+                  if (widget.pet.category == "Donation Request") ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF1F3C88)),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                        ),
+                        onPressed: _showDonationForm,
+                        child: const Text(
+                          "Donate Help (Food/Med/Cash)",
+                          style: TextStyle(
+                            color: Color(0xFF1F3C88),
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -120,9 +122,7 @@ class _PetDetailsState extends State<PetDetails> {
   // --- DONATION LOGIC ---
   void _showDonationForm() {
     if (widget.user?.userId == '0' || widget.user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please login to donate")));
+      _showLoginDialog(); // Better than SnackBar
       return;
     }
 
@@ -194,10 +194,13 @@ class _PetDetailsState extends State<PetDetails> {
   void _submitDonation() {
     // Validation
     if (selectedDonationType == 'Money' &&
-        _donationAmountController.text.isEmpty)
+        _donationAmountController.text.isEmpty) {
       return;
-    if (selectedDonationType != 'Money' && _donationDescController.text.isEmpty)
+    }
+    if (selectedDonationType != 'Money' &&
+        _donationDescController.text.isEmpty) {
       return;
+    }
 
     http
         .post(
@@ -217,7 +220,12 @@ class _PetDetailsState extends State<PetDetails> {
         .then((response) {
           var data = jsonDecode(response.body);
           if (data['status'] == 'success') {
-            Navigator.pop(context);
+            // --- ADD THESE TWO LINES HERE ---
+            _donationAmountController.clear();
+            _donationDescController.clear();
+            // --------------------------------
+
+            Navigator.pop(context); // This closes the Bottom Sheet
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Thank you for your donation!")),
             );
@@ -229,9 +237,7 @@ class _PetDetailsState extends State<PetDetails> {
   void _showAdoptionForm() {
     print("Current User ID in PetDetails: ${widget.user?.userId}");
     if (widget.user?.userId == '0' || widget.user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please login first")));
+      _showLoginDialog(); // Better than SnackBar
       return;
     }
 
@@ -305,6 +311,37 @@ class _PetDetailsState extends State<PetDetails> {
             );
           }
         });
+  }
+
+  void _showLoginDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Login Required"),
+        content: const Text("Please login to interact with this pet."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1F3C88),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to login page
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            },
+            child: const Text("Login", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildImageHeader() {
