@@ -5,11 +5,10 @@ class User {
   String? password;
   String? phone;
   String? regDate;
-
+  double? userCredit;
   //String? userAddress; // NEW
   //String? userLatitude; // Existing new
   //String? userLongitude; // Existing new
-  //int? userCredit;
 
   User({
     this.userId,
@@ -21,7 +20,7 @@ class User {
     //this.userAddress,
     //this.userLatitude,
     //this.userLongitude,
-    //this.userCredit,
+    this.userCredit,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -34,7 +33,7 @@ class User {
     //userAddress = json['user_address'];
     //userLatitude = json['user_latitude'];
     //userLongitude = json['user_longitude'];
-    //userCredit = json['user_credit'];
+    userCredit = double.tryParse(json['user_credit']?.toString() ?? '0.0');
   }
 
   get userName => null;
@@ -50,7 +49,7 @@ class User {
     //data['user_address'] = userAddress;
     //data['user_latitude'] = userLatitude;
     //data['user_longitude'] = userLongitude;
-    //data['user_credit'] = userCredit;
+    data['user_credit'] = userCredit;
     return data;
   }
 }

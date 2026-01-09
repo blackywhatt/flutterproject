@@ -127,87 +127,138 @@ class _MainScreenState extends State<MainScreen> {
                     itemCount: publicPetList.length,
                     itemBuilder: (context, index) {
                       Pet pet = publicPetList[index];
-                      // Assume first image in list for thumbnail
+
+                      // Image handling
                       String imagePath = "";
                       try {
                         List<dynamic> images = jsonDecode(
                           pet.imagePaths ?? '[]',
                         );
                         if (images.isNotEmpty) imagePath = images[0];
-                      } catch (e) {}
+                      } catch (e) {
+                        debugPrint("Image Error: $e");
+                      }
 
                       return Card(
                         clipBehavior: Clip.antiAlias,
+                        elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: InkWell(
-                          // Inside MainScreen.dart (the GridView/ListView itemBuilder)
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => PetDetails(
-                                  pet: pet,
-                                  user:
-                                      widget.user, // THIS IS THE IMPORTANT LINE
-                                ),
+                                builder: (context) =>
+                                    PetDetails(pet: pet, user: widget.user),
                               ),
                             );
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // 1. PET IMAGE
                               Expanded(
-                                child: Image.network(
-                                  "${MyConfig.baseUrl}/$imagePath",
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const Icon(Icons.pets, size: 50),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                flex: 6, // Takes up 60% of card height
+                                child: Stack(
                                   children: [
-                                    Text(
-                                      pet.petName ?? "Unknown",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                    Image.network(
+                                      "${MyConfig.baseUrl}/$imagePath",
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.pets,
+                                          size: 50,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      "${pet.petType}",
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    // Displaying Listing Category instead of Age
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.shade100,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        pet.category ?? "General",
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.orange,
+                                    // AGE TAG (Overlayed on image)
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.6),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          pet.petAge ?? "N/A",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ],
+                                ),
+                              ),
+
+                              // 2. PET DETAILS
+                              Expanded(
+                                flex: 4, // Takes up 40% of card height
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Text(
+                                        pet.petName ?? "Unknown",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      Text(
+                                        "${pet.petType}",
+                                        style: TextStyle(
+                                          color: Colors.blueGrey[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      // CATEGORY BADGE
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF1F3C88,
+                                          ).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          pet.category ?? "General",
+                                          style: const TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1F3C88),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],

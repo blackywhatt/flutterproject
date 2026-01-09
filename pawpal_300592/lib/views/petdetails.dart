@@ -56,7 +56,33 @@ class _PetDetailsState extends State<PetDetails> {
                       color: Colors.blueGrey,
                     ),
                   ),
-                  const Divider(height: 30),
+
+                  const SizedBox(height: 20),
+
+                  // --- NEW QUICK INFO SECTION ---
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _infoBox(
+                        Icons.transgender,
+                        "Gender",
+                        widget.pet.petGender ?? "N/A",
+                      ),
+                      _infoBox(
+                        Icons.cake_outlined,
+                        "Age",
+                        widget.pet.petAge ?? "Unknown",
+                      ),
+                      _infoBox(
+                        Icons.health_and_safety_outlined,
+                        "Health",
+                        widget.pet.petHealth ?? "Healthy",
+                      ),
+                    ],
+                  ),
+
+                  // ------------------------------
+                  const Divider(height: 40),
 
                   const Text(
                     "Posted By",
@@ -115,6 +141,34 @@ class _PetDetailsState extends State<PetDetails> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _infoBox(IconData icon, String label, String value) {
+    return Container(
+      width: (MediaQuery.of(context).size.width / 3) - 20,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F3C88).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF1F3C88).withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: const Color(0xFF1F3C88), size: 28),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F3C88),
+            ),
+          ),
+        ],
       ),
     );
   }

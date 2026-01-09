@@ -22,10 +22,14 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
   // Controllers
   TextEditingController petNameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController ageController = TextEditingController();
+  TextEditingController healthController = TextEditingController();
 
   // Dropdown Selections
   List<String> petTypes = ['Cat', 'Dog', 'Rabbit', 'Other'];
   List<String> categories = ['Adoption', 'Donation Request', 'Help/Rescue'];
+  List<String> genders = ['Male', 'Female'];
+  String? selectedGender;
   String? selectedPetType;
   String? selectedCategory;
 
@@ -159,6 +163,9 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
       "pet_name": petNameController.text,
       "pet_type": selectedPetType!,
       "category": selectedCategory!,
+      "pet_gender": selectedGender!, // New
+      "pet_age": ageController.text, // New
+      "pet_health": healthController.text, // New
       "description": descriptionController.text,
       "lat": lat,
       "lng": lng,
@@ -250,6 +257,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   validator: (v) => v == null ? "Select type" : null,
                 ),
                 const SizedBox(height: 15),
+
                 DropdownButtonFormField<String>(
                   value: selectedCategory,
                   decoration: const InputDecoration(
@@ -264,6 +272,48 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                   validator: (v) => v == null ? "Select category" : null,
                 ),
                 const SizedBox(height: 15),
+
+                // 1. Gender Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedGender,
+                  decoration: const InputDecoration(
+                    labelText: "Gender",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.transgender),
+                  ),
+                  items: genders
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedGender = v),
+                  validator: (v) => v == null ? "Select gender" : null,
+                ),
+                const SizedBox(height: 15),
+
+                // 2. Age TextField
+                TextFormField(
+                  controller: ageController,
+                  decoration: const InputDecoration(
+                    labelText: "Age (e.g. 2 years, Puppy)",
+                    prefixIcon: Icon(Icons.cake),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) => v!.isEmpty ? "Please enter age" : null,
+                ),
+                const SizedBox(height: 15),
+
+                // 3. Health Status TextField
+                TextFormField(
+                  controller: healthController,
+                  decoration: const InputDecoration(
+                    labelText: "Health Status (e.g. Healthy, Vaccinated)",
+                    prefixIcon: Icon(Icons.health_and_safety),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v!.isEmpty ? "Please enter health status" : null,
+                ),
+                const SizedBox(height: 15),
+
                 TextFormField(
                   controller: descriptionController,
                   maxLines: 4,
