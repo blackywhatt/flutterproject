@@ -18,8 +18,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   List<Pet> publicPetList = [];
   String status = "Loading pets...";
-
-  // Search and Filter variables
+  int numofpage = 1;
+  int curpage = 1;
+  final ScrollController _scrollController = ScrollController();
   TextEditingController searchController = TextEditingController();
   String selectedType = "All";
   List<String> petTypes = ["All", "Cat", "Dog", "Other"];
@@ -33,14 +34,13 @@ class _MainScreenState extends State<MainScreen> {
   void _loadPublicPets() async {
     setState(() => status = "Searching...");
 
-    // 1. Define the parameter
     String typeParam = (selectedType == "All") ? "" : selectedType;
 
-    // 2. USE the parameter in the URL string below
     String url =
         "${MyConfig.baseUrl}/pawpal/api/get_all_pets.php"
         "?search=${searchController.text}"
-        "&type=$typeParam"; // Changed from $selectedType to $typeParam
+        "&type=$typeParam"
+        "&pageno=$curpage";
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -51,11 +51,14 @@ class _MainScreenState extends State<MainScreen> {
             publicPetList = List<Pet>.from(
               data['data'].map((x) => Pet.fromJson(x)),
             );
+            // Update total pages from server response
+            numofpage = int.parse(data['numofpage'].toString());
             status = "";
           });
         } else {
           setState(() {
             publicPetList = [];
+            numofpage = 1;
             status = "No pets found matching your criteria.";
           });
         }
@@ -91,7 +94,12 @@ class _MainScreenState extends State<MainScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onSubmitted: (_) => _loadPublicPets(),
+                    onSubmitted: (_) {
+                      setState(() {
+                        curpage = 1;
+                      });
+                      _loadPublicPets();
+                    },
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -103,8 +111,9 @@ class _MainScreenState extends State<MainScreen> {
                   onChanged: (value) {
                     setState(() {
                       selectedType = value!;
-                      _loadPublicPets();
+                      curpage = 1;
                     });
+                    _loadPublicPets();
                   },
                 ),
               ],
@@ -116,6 +125,7 @@ class _MainScreenState extends State<MainScreen> {
             child: publicPetList.isEmpty
                 ? Center(child: Text(status))
                 : GridView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(10),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -270,6 +280,59 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
+
+      bottomNavigationBar: publicPetList.isNotEmpty
+          ? Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 6,
+                    color: Colors.black.withOpacity(0.08),
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: numofpage,
+                itemBuilder: (context, index) {
+                  final isActive = (curpage - 1) == index;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: isActive
+                            ? const Color(0xFF1F3C88)
+                            : Colors.grey.shade200,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          curpage = index + 1;
+                          _loadPublicPets(); // Reload data for the new page
+                          _scrollController.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeIn,
+                          );
+                        });
+                      },
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          color: isActive ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
     );
   }
 }

@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_typing_uninitialized_variables
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +6,7 @@ import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
 import 'package:pawpal_300592/views/loginpage.dart';
 import 'package:pawpal_300592/views/submitpetscreen.dart';
-import 'package:pawpal_300592/shared/mydrawer.dart'; // Ensure this exists
+import 'package:pawpal_300592/shared/mydrawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyPetScreen extends StatefulWidget {
@@ -113,72 +111,26 @@ class _MyPetScreenState extends State<MyPetScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-
-      // This adds the 3-line menu (Drawer) to the left side
       drawer: MyDrawer(user: widget.user),
-
       appBar: buildModernAppBar(),
-
       body: Center(
         child: SizedBox(
           width: contentWidth,
-          child: Column(
-            children: [
-              Expanded(
-                child: myPetList.isEmpty ? _buildEmptyState() : _buildPetList(),
-              ),
-            ],
+          // Added RefreshIndicator so you can still refresh by pulling down
+          child: RefreshIndicator(
+            onRefresh: () async => _loadMyPets(),
+            child: Column(
+              children: [
+                Expanded(
+                  child: myPetList.isEmpty
+                      ? _buildEmptyState()
+                      : _buildPetList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-
-      bottomNavigationBar: myPetList.isNotEmpty
-          ? Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 6,
-                    color: Colors.black.withOpacity(0.08),
-                  ),
-                ],
-              ),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: numofpage,
-                itemBuilder: (context, index) {
-                  final isActive = (curpage - 1) == index;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: isActive
-                            ? const Color(0xFF1F3C88)
-                            : Colors.grey.shade200,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          curpage = index + 1;
-                          _loadMyPets();
-                        });
-                      },
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          color: isActive ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          : null,
 
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color.fromARGB(255, 4, 53, 159),
@@ -194,7 +146,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
       elevation: 0,
       backgroundColor: const Color(0xFF1F3C88),
       foregroundColor: Colors.white,
-      // The drawer icon (3 lines) will automatically appear here because we added "drawer" to Scaffold
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
@@ -209,12 +160,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
         ],
       ),
       actions: [
-        _buildAppBarIcon(icon: Icons.search, onTap: () {}, tooltip: "Search"),
-        _buildAppBarIcon(
-          icon: Icons.refresh,
-          onTap: _loadMyPets,
-          tooltip: "Refresh",
-        ),
         _buildAppBarIcon(
           icon: Icons.logout,
           onTap: widget.user?.userId != '0' ? _logout : () {},
@@ -249,7 +194,7 @@ class _MyPetScreenState extends State<MyPetScreen> {
 
   Widget _buildPetList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       itemCount: myPetList.length,
       itemBuilder: (context, index) {
         Pet pet = myPetList[index];
@@ -260,22 +205,27 @@ class _MyPetScreenState extends State<MyPetScreen> {
           imagePaths = [];
         }
 
-        return Card(
-          elevation: 3,
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.2),
+            ), // Soft border instead of heavy shadow
           ),
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 1. Sleek Image Square
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    width: 110,
-                    height: 90,
-                    color: Colors.grey.shade200,
+                    width: 100,
+                    height: 100,
+                    color: Colors.grey.shade100,
                     child: imagePaths.isNotEmpty
                         ? Image.network(
                             '${MyConfig.baseUrl}/${imagePaths[0]}',
@@ -286,47 +236,82 @@ class _MyPetScreenState extends State<MyPetScreen> {
                         : const Icon(Icons.pets, color: Colors.grey),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
+
+                // 2. Info Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        pet.petName ?? 'N/A',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              pet.petName ?? 'N/A',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1F3C88),
+                              ),
+                            ),
+                          ),
+                          // Circular Delete Button
+                          GestureDetector(
+                            onTap: () => _confirmDelete(pet),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        pet.description ?? '',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        "${pet.petType} • ${pet.category}",
                         style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blueGrey.shade400,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F3C88).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          pet.petType ?? 'N/A',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF1F3C88),
+                      const SizedBox(height: 8),
+                      // Age & Gender with Icons
+                      Row(
+                        children: [
+                          Icon(Icons.wc, size: 14, color: Colors.grey.shade500),
+                          const SizedBox(width: 4),
+                          Text(
+                            pet.petGender ?? 'N/A',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 12),
+                          Icon(
+                            Icons.cake_outlined,
+                            size: 14,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${pet.petAge} old",
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -336,6 +321,59 @@ class _MyPetScreenState extends State<MyPetScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _deletePet(String petId) {
+    http
+        .post(
+          Uri.parse("${MyConfig.baseUrl}/pawpal/api/delete_pet.php"),
+          body: {"pet_id": petId, "user_id": widget.user!.userId.toString()},
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            var data = jsonDecode(response.body);
+            if (data['status'] == 'success') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Pet deleted successfully")),
+              );
+              _loadMyPets(); // Refresh the list
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Failed to delete pet")),
+              );
+            }
+          }
+        })
+        .catchError((error) {
+          debugPrint("Delete error: $error");
+        });
+  }
+
+  // Delete Confirmation Dialog
+  void _confirmDelete(Pet pet) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Listing?"),
+        content: Text(
+          "Are you sure you want to remove ${pet.petName}? This action cannot be undone.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              _deletePet(pet.petId!); // Call the delete function
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
