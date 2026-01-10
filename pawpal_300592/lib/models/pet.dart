@@ -12,6 +12,7 @@ class Pet {
   String? petGender;
   String? petAge;
   String? petHealth;
+  String? ownerName;
 
   Pet({
     this.petId,
@@ -27,6 +28,7 @@ class Pet {
     this.petGender,
     this.petAge,
     this.petHealth,
+    this.ownerName,
   });
 
   Pet.fromJson(Map<String, dynamic> json) {
@@ -43,5 +45,6 @@ class Pet {
     petGender = json['pet_gender'];
     petAge = json['pet_age'];
     petHealth = json['pet_health'];
+    ownerName = json['owner_name'];
   }
 }

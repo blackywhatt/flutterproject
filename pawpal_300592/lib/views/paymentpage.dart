@@ -45,8 +45,9 @@ class _PaymentPageState extends State<PaymentPage> {
           var data = jsonDecode(response.body);
 
           if (data['status'] == 'success') {
-            // Success: Clear stack and return to home/details
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.pop(context); // This closes PaymentPage
+            Navigator.pop(context); // This closes SelectDonationPage
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(

@@ -91,7 +91,7 @@ class _PetDetailsState extends State<PetDetails> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text("User ID: ${widget.pet.userId}"),
-                  Text("Name: ${widget.user?.name}"),
+                  Text("Name: ${widget.pet.ownerName ?? 'Unknown'}"),
 
                   const SizedBox(height: 20),
                   const Text(

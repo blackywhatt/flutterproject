@@ -50,8 +50,11 @@ class _AidDonationPageState extends State<AidDonationPage> {
         .then((response) {
           var data = jsonDecode(response.body);
           if (data['status'] == 'success') {
-            // Returns to PetDetails and shows success
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            // 1. Go back from AidDonationPage to SelectDonationPage
+            Navigator.pop(context);
+            // 2. Go back from SelectDonationPage to PetDetails
+            Navigator.pop(context);
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text("Thank you for your ${widget.type} donation!"),

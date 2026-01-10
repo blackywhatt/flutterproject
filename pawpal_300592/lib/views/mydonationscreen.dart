@@ -25,6 +25,7 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
 
   void _loadDonations() {
     setState(() => isLoading = true);
+    _updateUserCredit();
     http
         .get(
           Uri.parse(
@@ -40,7 +41,10 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
                 isLoading = false;
               });
             } else {
-              setState(() => isLoading = false);
+              setState(() {
+                donationList = []; // Clear list if no history found
+                isLoading = false;
+              });
             }
           } else {
             setState(() => isLoading = false);
@@ -48,6 +52,28 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
         })
         // ignore: invalid_return_type_for_catch_error
         .catchError((_) => setState(() => isLoading = false));
+  }
+
+  void _updateUserCredit() {
+    http
+        .get(
+          Uri.parse(
+            "${MyConfig.baseUrl}/pawpal/api/login_user.php?email=${widget.user.email}&password=${widget.user.password}",
+          ),
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            var data = jsonDecode(response.body);
+            if (data['status'] == 'success') {
+              setState(() {
+                // FIX: Parse the String from the database into a double
+                widget.user.userCredit =
+                    double.tryParse(data['data']['user_credit'].toString()) ??
+                    0.0;
+              });
+            }
+          }
+        });
   }
 
   @override
