@@ -1,6 +1,19 @@
 # 🐾 PawPal Pet Adoption and Donation App
 
-This repository contains the Flutter application and PHP backend API for the PawPal pet adoption and donation platform.
+PawPal is a Flutter application designed to help users manage and track their pets. It provides a simple interface for users to create accounts, submit pet profiles with photos, view their collection of pets, request adoption, make donations and more.
+
+## Features
+# Pet Management
+Submit Pet Profiles: Users can add new pets to the system. This includes entering pet details and uploading images.
+Edit Pet Profiles: Users can modify existing pet information and update images.
+Pets Dashboard: A dedicated view for users to retrieve and display their submitted pets.
+
+# Adoption Request
+Request Adoption: Users can request to adopt pets listed in the system.
+View Requests: Users can view the status of their adoption requests and respond to requests made to tehm.
+
+# Donations
+Make Donations: Users can contribute donations to support pet with money, medicine or food.
 
 ## Setup & Installation
 
