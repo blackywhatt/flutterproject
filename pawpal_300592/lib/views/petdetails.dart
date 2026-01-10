@@ -17,11 +17,6 @@ class PetDetails extends StatefulWidget {
 
 class _PetDetailsState extends State<PetDetails> {
   final TextEditingController _messageController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  // Controllers for Donation Form
-  final TextEditingController _donationAmountController =
-      TextEditingController();
-  final TextEditingController _donationDescController = TextEditingController();
   String selectedDonationType = 'Money';
 
   @override
@@ -61,7 +56,6 @@ class _PetDetailsState extends State<PetDetails> {
 
                   const SizedBox(height: 20),
 
-                  // --- NEW QUICK INFO SECTION ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -103,7 +97,6 @@ class _PetDetailsState extends State<PetDetails> {
                   if (!isOwner) ...[
                     const SizedBox(height: 30),
 
-                    // BUTTON 1: REQUEST TO ADOPT (Always visible)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -119,7 +112,6 @@ class _PetDetailsState extends State<PetDetails> {
                       ),
                     ),
 
-                    // BUTTON 2: DONATION (Conditional - only for donation requests)
                     if (widget.pet.category == "Donation Request") ...[
                       const SizedBox(height: 10),
                       SizedBox(
@@ -130,12 +122,10 @@ class _PetDetailsState extends State<PetDetails> {
                             padding: const EdgeInsets.symmetric(vertical: 15),
                           ),
                           onPressed: () {
-                            // First check if user is logged in
                             if (widget.user?.userId == '0' ||
                                 widget.user == null) {
                               _showLoginDialog();
                             } else {
-                              // Navigate to your new selection page
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -207,128 +197,13 @@ class _PetDetailsState extends State<PetDetails> {
     );
   }
 
-  // --- DONATION LOGIC ---
-  void _showDonationForm() {
-    if (widget.user?.userId == '0' || widget.user == null) {
-      _showLoginDialog(); // Better than SnackBar
-      return;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Make a Donation",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 15),
-              DropdownButtonFormField<String>(
-                value: selectedDonationType,
-                items: ['Money', 'Food', 'Medical']
-                    .map(
-                      (type) =>
-                          DropdownMenuItem(value: type, child: Text(type)),
-                    )
-                    .toList(),
-                onChanged: (value) =>
-                    setModalState(() => selectedDonationType = value!),
-                decoration: const InputDecoration(
-                  labelText: "Donation Type",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 15),
-              if (selectedDonationType == 'Money')
-                TextField(
-                  controller: _donationAmountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Amount (RM)",
-                    border: OutlineInputBorder(),
-                  ),
-                )
-              else
-                TextField(
-                  controller: _donationDescController,
-                  decoration: InputDecoration(
-                    labelText: "Description (e.g. 5kg $selectedDonationType)",
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submitDonation,
-                child: const Text("Submit Donation"),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _submitDonation() {
-    // Validation
-    if (selectedDonationType == 'Money' &&
-        _donationAmountController.text.isEmpty) {
-      return;
-    }
-    if (selectedDonationType != 'Money' &&
-        _donationDescController.text.isEmpty) {
-      return;
-    }
-
-    http
-        .post(
-          Uri.parse("${MyConfig.baseUrl}/pawpal/api/submit_donation.php"),
-          body: {
-            "user_id": widget.user!.userId,
-            "pet_id": widget.pet.petId,
-            "donation_type": selectedDonationType,
-            "amount": selectedDonationType == 'Money'
-                ? _donationAmountController.text
-                : "0",
-            "description": selectedDonationType != 'Money'
-                ? _donationDescController.text
-                : "",
-          },
-        )
-        .then((response) {
-          var data = jsonDecode(response.body);
-          if (data['status'] == 'success') {
-            // --- ADD THESE TWO LINES HERE ---
-            _donationAmountController.clear();
-            _donationDescController.clear();
-            // --------------------------------
-
-            Navigator.pop(context); // This closes the Bottom Sheet
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Thank you for your donation!")),
-            );
-          }
-        });
-  }
-
-  // Task Requirement: Adoption Form with Validation
   void _showAdoptionForm() {
     if (widget.user?.userId == '0' || widget.user == null) {
       _showLoginDialog();
       return;
     }
 
-    // Define a local key for this specific form instance
+    // ignore: no_leading_underscores_for_local_identifiers
     final GlobalKey<FormState> _adoptionFormKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
