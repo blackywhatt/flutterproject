@@ -515,7 +515,7 @@ class _MyPetScreenState extends State<MyPetScreen> {
                                           onConfirm: () async {
                                             bool success =
                                                 await _handleAdoption(
-                                                  req['adoption_id'],
+                                                  req['adoption_id'].toString(),
                                                   'Rejected',
                                                 );
                                             if (success && mounted) {
