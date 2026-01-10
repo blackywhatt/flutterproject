@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pawpal_300592/models/user.dart';
-import 'package:pawpal_300592/shared/animated_route.dart'; // 1. Import the animation
+import 'package:pawpal_300592/shared/animated_route.dart';
 import 'package:pawpal_300592/views/loginpage.dart';
 import 'package:pawpal_300592/views/mainscreen.dart';
 import 'package:pawpal_300592/views/mydonationscreen.dart';
@@ -49,7 +49,6 @@ class _MyDrawerState extends State<MyDrawer> {
             ),
           ),
 
-          // HOME
           ListTile(
             leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
@@ -57,21 +56,18 @@ class _MyDrawerState extends State<MyDrawer> {
               Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
-                AnimatedRoute.slideFromRight(
-                  MainScreen(user: widget.user),
-                ), // 2. Use animation
-              ); // Close drawer
+                AnimatedRoute.slideFromRight(MainScreen(user: widget.user)),
+              );
             },
           ),
 
-          // MY SERVICES
           ListTile(
             leading: const Icon(Icons.pets_outlined),
             title: const Text('My Pets'),
             onTap: () {
               if (widget.user?.userId == '0' || widget.user == null) {
                 Navigator.pop(context);
-                _showLoginDialog(context); // Block guests from seeing "My Pets"
+                _showLoginDialog(context);
               } else {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
@@ -86,28 +82,26 @@ class _MyDrawerState extends State<MyDrawer> {
             leading: const Icon(Icons.volunteer_activism_outlined),
             title: const Text('My Donations'),
             onTap: () {
-              // Check if logged in
               if (widget.user?.userId == '0' || widget.user == null) {
                 Navigator.pop(context);
                 _showLoginDialog(context);
               } else {
-                Navigator.pop(context); // Close drawer
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   AnimatedRoute.slideFromRight(
-                    MyDonationScreen(user: widget.user!), // Navigate to history
+                    MyDonationScreen(user: widget.user!),
                   ),
                 );
               }
             },
           ),
 
-          // SETTINGS
           ListTile(
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Settings'),
             onTap: () {
-              Navigator.pop(context); // Close drawer
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -117,22 +111,18 @@ class _MyDrawerState extends State<MyDrawer> {
             },
           ),
 
-          // PROFILE
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: const Text('Profile'),
             onTap: () {
-              // 1. Check if the user is a guest ('0') or null
               if (widget.user?.userId == '0' ||
                   widget.user == null ||
                   widget.user?.userId == null) {
-                Navigator.pop(context); // Close the drawer
-                _showLoginDialog(context); // Ask them to login
+                Navigator.pop(context);
+                _showLoginDialog(context);
               } else {
-                // 2. If logged in, go to ProfilePage
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
 
-                // 3. Use the AnimatedRoute you just added!
                 Navigator.pushReplacement(
                   context,
                   AnimatedRoute.slideFromRight(ProfilePage(user: widget.user!)),
@@ -202,8 +192,7 @@ class _MyDrawerState extends State<MyDrawer> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                // Navigate to Login and clear all screens
+                Navigator.pop(context);
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -236,7 +225,6 @@ class _MyDrawerState extends State<MyDrawer> {
             ),
             onPressed: () {
               Navigator.pop(context);
-              // Using slide animation for login too!
               Navigator.push(
                 context,
                 AnimatedRoute.slideFromRight(const LoginPage()),

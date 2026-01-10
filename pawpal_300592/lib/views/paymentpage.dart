@@ -24,7 +24,6 @@ class _PaymentPageState extends State<PaymentPage> {
       return;
     }
 
-    // If valid, show the confirmation dialog before submitting
     _showConfirmDialog(_amountController.text);
   }
 
@@ -38,7 +37,7 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // Cancel
+            onPressed: () => Navigator.pop(context),
             child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
@@ -46,8 +45,8 @@ class _PaymentPageState extends State<PaymentPage> {
               backgroundColor: const Color(0xFF1F3C88),
             ),
             onPressed: () {
-              Navigator.pop(context); // Close this dialog
-              _submitMoneyDonation(); // Proceed to final payment
+              Navigator.pop(context);
+              _submitMoneyDonation();
             },
             child: const Text("Confirm", style: TextStyle(color: Colors.white)),
           ),
@@ -88,25 +87,17 @@ class _PaymentPageState extends State<PaymentPage> {
             String formattedBalance = "";
 
             setState(() {
-              // 1. Get the donation amount as a double
               double donationAmount = double.tryParse(amountStr) ?? 0.0;
-
-              // 2. MATH: Since userCredit is already a double, just use it!
-              // We use ?? 0.0 in case the credit is null
               double currentCredit = widget.user.userCredit ?? 0.0;
               double newBalance = currentCredit - donationAmount;
 
-              // 3. Update the model with the new double value
               widget.user.userCredit = newBalance;
 
-              // 4. Format for the receipt display
               formattedBalance = newBalance.toStringAsFixed(2);
             });
 
             _showReceiptDialog(amountStr, formattedBalance);
-          } else {
-            // Handle failure...
-          }
+          } else {}
         });
   }
 
@@ -142,9 +133,9 @@ class _PaymentPageState extends State<PaymentPage> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // Close dialog
-                  Navigator.pop(context); // Close PaymentPage
-                  Navigator.pop(context); // Close SelectDonationPage
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: const Text(
                   "Done",
@@ -209,7 +200,6 @@ class _PaymentPageState extends State<PaymentPage> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  // Use .toString() to avoid the 'Object' error in UI
                   "Available Balance: RM ${widget.user.userCredit?.toString() ?? '0.00'}",
                   style: const TextStyle(
                     color: Color(0xFF1F3C88),
@@ -235,7 +225,6 @@ class _PaymentPageState extends State<PaymentPage> {
                   final n = double.tryParse(value);
                   if (n == null || n <= 0) return "Enter a valid amount";
 
-                  // Since userCredit is a double?, we just provide a default of 0.0 if null
                   double availableBalance = widget.user.userCredit ?? 0.0;
 
                   if (n > availableBalance) {

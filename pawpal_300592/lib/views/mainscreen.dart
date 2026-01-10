@@ -51,7 +51,6 @@ class _MainScreenState extends State<MainScreen> {
             publicPetList = List<Pet>.from(
               data['data'].map((x) => Pet.fromJson(x)),
             );
-            // Update total pages from server response
             numofpage = int.parse(data['numofpage'].toString());
             status = "";
           });
@@ -79,7 +78,6 @@ class _MainScreenState extends State<MainScreen> {
       drawer: MyDrawer(user: widget.user),
       body: Column(
         children: [
-          // SEARCH & FILTER SECTION
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(
@@ -110,8 +108,7 @@ class _MainScreenState extends State<MainScreen> {
                   onChanged: (value) {
                     setState(() {
                       selectedType = value!;
-                      curpage =
-                          1; // Resets pagination so you don't get stuck on an empty page
+                      curpage = 1;
                     });
                     _loadPublicPets();
                   },
@@ -135,7 +132,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
 
-          // LIST OF PETS
           Expanded(
             child: publicPetList.isEmpty
                 ? Center(child: Text(status))
@@ -153,7 +149,6 @@ class _MainScreenState extends State<MainScreen> {
                     itemBuilder: (context, index) {
                       Pet pet = publicPetList[index];
 
-                      // Image handling
                       String imagePath = "";
                       try {
                         List<dynamic> images = jsonDecode(
@@ -183,9 +178,8 @@ class _MainScreenState extends State<MainScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // 1. PET IMAGE
                               Expanded(
-                                flex: 6, // Takes up 60% of card height
+                                flex: 6,
                                 child: Stack(
                                   children: [
                                     Image.network(
@@ -202,7 +196,6 @@ class _MainScreenState extends State<MainScreen> {
                                         ),
                                       ),
                                     ),
-                                    // AGE TAG (Overlayed on image)
                                     Positioned(
                                       top: 8,
                                       right: 8,
@@ -231,9 +224,8 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ),
 
-                              // 2. PET DETAILS
                               Expanded(
-                                flex: 4, // Takes up 40% of card height
+                                flex: 4,
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
@@ -259,7 +251,6 @@ class _MainScreenState extends State<MainScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 4),
-                                      // CATEGORY BADGE
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 6,
@@ -331,7 +322,6 @@ class _MainScreenState extends State<MainScreen> {
                           _loadPublicPets();
                         });
 
-                        // Add this to jump back to the top of the list
                         if (_scrollController.hasClients) {
                           _scrollController.animateTo(
                             0,

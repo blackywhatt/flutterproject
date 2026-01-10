@@ -39,7 +39,6 @@ class _ProfilePageState extends State<ProfilePage> {
     phoneController.text = widget.user.phone ?? '';
   }
 
-  // ================= IMAGE SELECTION =================
   Future<void> _selectImage() async {
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -55,7 +54,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // ================= UPDATE PROFILE =================
   Future<void> _updateProfile() async {
     if (nameController.text.isEmpty || phoneController.text.isEmpty) {
       _showSnackBar("Please fill in all fields", Colors.red);
@@ -80,13 +78,12 @@ class _ProfilePageState extends State<ProfilePage> {
               'image': base64Image,
             },
           )
-          .timeout(const Duration(seconds: 10)); // Add timeout for stability
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         if (data['status'] == 'success') {
           _showSnackBar("Profile updated successfully", Colors.green);
-          // Call loadProfile and WAIT for it to finish
           await loadProfile();
         } else {
           _showSnackBar("Update failed: ${data['message']}", Colors.red);
@@ -100,7 +97,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // ================= REFRESH & SESSION MANAGEMENT =================
   Future<void> loadProfile() async {
     setState(() => isLoading = true);
     try {
@@ -113,8 +109,6 @@ class _ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         var resarray = jsonDecode(response.body);
         if (resarray['status'] == 'success') {
-          // IMPORTANT: Usually PHP returns data as an array [ {...} ]
-          // We take the first element index [0]
           var userData = resarray['data'];
           if (userData is List && userData.isNotEmpty) {
             userData = userData[0];
@@ -122,16 +116,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
           User updatedUser = User.fromJson(userData);
 
-          // Update SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('user', jsonEncode(updatedUser.toJson()));
 
-          // Update UI State
+          // Update UI
           setState(() {
             widget.user = updatedUser;
             _loadUserData();
-            _image =
-                null; // Clear the local file so it loads the new network image
+            _image = null;
             isLoading = false;
           });
         }
@@ -185,7 +177,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        // AVATAR SECTION WITH CAMERA ICON
                         GestureDetector(
                           onTap: _selectImage,
                           child: Stack(
@@ -208,7 +199,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                           height: 100,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                                // This shows if the 404 error happens
                                                 return const Icon(
                                                   Icons.person,
                                                   size: 50,
@@ -235,7 +225,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
 
-                        // --- ADD THIS RIGHT BELOW THE AVATAR SECTION ---
                         const SizedBox(height: 10),
                         Container(
                           width: double.infinity,
@@ -297,13 +286,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 20),
 
-                        // --- END OF WALLET CARD ---
                         _readonlyField("User ID", widget.user.userId),
                         _readonlyField("Email", widget.user.email),
 
                         const Divider(height: 30),
 
-                        // USER INPUT FIELDS
                         _inputField(
                           controller: nameController,
                           label: "Name",
@@ -357,7 +344,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ================= HELPERS FROM LECTURER =================
   Widget _readonlyField(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),

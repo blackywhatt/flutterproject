@@ -94,7 +94,6 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
           if (placemarks.isNotEmpty) {
             Placemark place = placemarks[0];
 
-            // UPDATED: Using your friend's exact formatting logic
             locStatus =
                 "${place.name},${place.postalCode},${place.locality},${place.administrativeArea},${place.country}";
           } else {
@@ -157,15 +156,14 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
         ? base64Encode(_image3!.readAsBytesSync())
         : "";
 
-    // IMPORTANT: Ensure keys match your submit_pet.php exactly
     var body = {
       "user_id": widget.user!.userId.toString(),
       "pet_name": petNameController.text,
       "pet_type": selectedPetType!,
       "category": selectedCategory!,
-      "pet_gender": selectedGender!, // New
-      "pet_age": ageController.text, // New
-      "pet_health": healthController.text, // New
+      "pet_gender": selectedGender!,
+      "pet_age": ageController.text,
+      "pet_health": healthController.text,
       "description": descriptionController.text,
       "lat": lat,
       "lng": lng,
@@ -180,13 +178,13 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
           body: body,
         )
         .then((response) {
-          Navigator.pop(context); // Close loading dialog
+          Navigator.pop(context);
 
           if (response.statusCode == 200) {
             var data = jsonDecode(response.body);
             if (data['status'] == 'success') {
               _showMessage("Pet submitted successfully!");
-              Navigator.pop(context); // Return to previous screen
+              Navigator.pop(context);
             } else {
               _showMessage("Server Error: ${data['message']}");
             }
@@ -273,7 +271,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // 1. Gender Dropdown
+                // Gender Dropdown
                 DropdownButtonFormField<String>(
                   value: selectedGender,
                   decoration: const InputDecoration(
@@ -289,7 +287,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // 2. Age TextField
+                // Age TextField
                 TextFormField(
                   controller: ageController,
                   decoration: const InputDecoration(
@@ -301,7 +299,7 @@ class _SubmitPetScreenState extends State<SubmitPetScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // 3. Health Status TextField
+                // Health Status TextField
                 TextFormField(
                   controller: healthController,
                   decoration: const InputDecoration(

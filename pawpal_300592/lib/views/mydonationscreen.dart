@@ -42,7 +42,7 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
               });
             } else {
               setState(() {
-                donationList = []; // Clear list if no history found
+                donationList = [];
                 isLoading = false;
               });
             }
@@ -66,7 +66,6 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
             var data = jsonDecode(response.body);
             if (data['status'] == 'success') {
               setState(() {
-                // FIX: Parse the String from the database into a double
                 widget.user.userCredit =
                     double.tryParse(data['data']['user_credit'].toString()) ??
                     0.0;
@@ -102,12 +101,10 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
           ),
         ],
       ),
-      // MAKE SURE DRAWER IS DECLARED BELOW
       drawer: MyDrawer(user: widget.user),
 
       body: Column(
         children: [
-          // MINI WALLET SUMMARY AT TOP
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),

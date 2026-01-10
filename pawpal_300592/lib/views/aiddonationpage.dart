@@ -1,9 +1,9 @@
-import 'dart:convert'; // Add this for jsonDecode
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Add this for API calls
+import 'package:http/http.dart' as http;
 import 'package:pawpal_300592/models/pet.dart';
 import 'package:pawpal_300592/models/user.dart';
-import 'package:pawpal_300592/myconfig.dart'; // Add this for baseUrl
+import 'package:pawpal_300592/myconfig.dart';
 
 class AidDonationPage extends StatefulWidget {
   final Pet pet;
@@ -39,7 +39,6 @@ class _AidDonationPageState extends State<AidDonationPage> {
       return;
     }
 
-    // Combine values for the database 'description' field
     String finalDescription =
         "Item: $itemName | Qty: $quantity | Method: $_deliveryMethod | Note: $description";
 
@@ -73,9 +72,9 @@ class _AidDonationPageState extends State<AidDonationPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close AidPage
-              Navigator.pop(context); // Close SelectPage
+              Navigator.pop(context);
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text("OK"),
           ),
@@ -146,7 +145,6 @@ class _AidDonationPageState extends State<AidDonationPage> {
             ),
             const SizedBox(height: 15),
 
-            // Additional Notes
             TextField(
               controller: _descController,
               maxLines: 3,

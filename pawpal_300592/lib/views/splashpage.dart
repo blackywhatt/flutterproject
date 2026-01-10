@@ -27,7 +27,6 @@ class _SplashPageState extends State<SplashPage> {
       String email = prefs.getString('email') ?? '';
       String password = prefs.getString('password') ?? '';
       if (email.isNotEmpty && password.isNotEmpty) {
-        // Attempt login using stored credentials
         var response = await http.post(
           Uri.parse('${MyConfig.baseUrl}/pawpal/api/login_user.php'),
           body: {'email': email, 'password': password},
@@ -35,7 +34,6 @@ class _SplashPageState extends State<SplashPage> {
         if (response.statusCode == 200) {
           var data = jsonDecode(response.body);
           if (data['success'] == true) {
-            // build User model and navigate after short delay
             User user = User.fromJson(data['data']);
             await Future.delayed(const Duration(seconds: 2));
             if (!mounted) return;
@@ -48,17 +46,10 @@ class _SplashPageState extends State<SplashPage> {
         }
       }
     }
-    // Otherwise, show splash for 2 seconds then go to Login
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
-    // Create a guest user object
-    User guestUser = User(
-      userId: "0",
-      name: "Guest",
-      email: "Not Logged In",
-      // Add other fields from your User model as empty strings if needed
-    );
+    User guestUser = User(userId: "0", name: "Guest", email: "Not Logged In");
 
     Navigator.pushReplacement(
       context,

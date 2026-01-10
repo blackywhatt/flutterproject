@@ -116,7 +116,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
       body: Center(
         child: SizedBox(
           width: contentWidth,
-          // Added RefreshIndicator so you can still refresh by pulling down
           child: RefreshIndicator(
             onRefresh: () async => _loadMyPets(),
             child: Column(
@@ -210,16 +209,13 @@ class _MyPetScreenState extends State<MyPetScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.grey.withOpacity(0.2),
-            ), // Soft border instead of heavy shadow
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Sleek Image Square
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
@@ -238,7 +234,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
                 ),
                 const SizedBox(width: 16),
 
-                // 2. Info Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +252,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
                               ),
                             ),
                           ),
-                          // Circular Delete Button
                           GestureDetector(
                             onTap: () => _confirmDelete(pet),
                             child: Container(
@@ -285,7 +279,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // Age & Gender with Icons
                       Row(
                         children: [
                           Icon(Icons.wc, size: 14, color: Colors.grey.shade500),
@@ -350,7 +343,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
         });
   }
 
-  // Delete Confirmation Dialog
   void _confirmDelete(Pet pet) {
     showDialog(
       context: context,

@@ -13,8 +13,8 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  String selectedTheme = 'system'; // system | light | dark
-  String selectedLanguage = 'en'; // en | ms
+  String selectedTheme = 'system';
+  String selectedLanguage = 'en';
   bool isLoading = true;
 
   @override
@@ -23,7 +23,6 @@ class _SettingPageState extends State<SettingPage> {
     loadSettings();
   }
 
-  // Load saved preferences from SharedPreferences
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -33,17 +32,14 @@ class _SettingPageState extends State<SettingPage> {
     });
   }
 
-  // Save Theme preference
   Future<void> saveTheme(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('theme', value);
     setState(() => selectedTheme = value);
 
-    // Optional: You could trigger a theme change globally here
     _showToast("Theme updated");
   }
 
-  // Save Language preference
   Future<void> saveLanguage(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', value);
@@ -135,8 +131,6 @@ class _SettingPageState extends State<SettingPage> {
       drawer: MyDrawer(user: widget.user),
     );
   }
-
-  // ---------- UI helpers ----------
 
   Widget _sectionTitle(String title) {
     return Padding(

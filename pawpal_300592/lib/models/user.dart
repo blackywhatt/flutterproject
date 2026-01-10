@@ -6,9 +6,6 @@ class User {
   String? phone;
   String? regDate;
   double? userCredit;
-  //String? userAddress; // NEW
-  //String? userLatitude; // Existing new
-  //String? userLongitude; // Existing new
 
   User({
     this.userId,
@@ -17,9 +14,6 @@ class User {
     this.password,
     this.phone,
     this.regDate,
-    //this.userAddress,
-    //this.userLatitude,
-    //this.userLongitude,
     this.userCredit,
   });
 
@@ -30,9 +24,6 @@ class User {
     password = json['user_password']?.toString() ?? '';
     phone = json['user_phone']?.toString() ?? '';
     regDate = json['user_regdate']?.toString() ?? '';
-    //userAddress = json['user_address'];
-    //userLatitude = json['user_latitude'];
-    //userLongitude = json['user_longitude'];
     userCredit = double.tryParse(json['user_credit']?.toString() ?? '0.0');
   }
 
@@ -46,9 +37,6 @@ class User {
     data['user_password'] = password;
     data['user_phone'] = phone;
     data['user_regdate'] = regDate;
-    //data['user_address'] = userAddress;
-    //data['user_latitude'] = userLatitude;
-    //data['user_longitude'] = userLongitude;
     data['user_credit'] = userCredit;
     return data;
   }
