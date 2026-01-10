@@ -1,5 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: *"); // running as crome app
+header("Access-Control-Allow-Origin: *"); 
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (!isset($_GET['userid'])) {
@@ -28,8 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     sendJsonResponse($response);
     exit();
 }
-
-
 
 function sendJsonResponse($sentArray)
 {

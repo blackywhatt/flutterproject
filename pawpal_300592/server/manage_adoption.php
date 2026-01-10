@@ -1,25 +1,45 @@
 <?php
 include_once("dbconnect.php");
+header('Content-Type: application/json');
 
-$adoption_id = $_POST['adoption_id'];
-$status = $_POST['status']; // 'Approved' or 'Rejected'
+$adoption_id = $_POST['adoption_id'] ?? null;
+$status = $_POST['status'] ?? null;
 
-// Update the status in tbl_adoptions
-$sqlupdate = "UPDATE `tbl_adoptions` SET `status` = '$status' WHERE `adoption_id` = '$adoption_id'";
+if (!$adoption_id || !$status) {
+    echo json_encode(['status' => 'failed', 'message' => 'Missing data']);
+    exit();
+}
 
-if ($conn->query($sqlupdate) === TRUE) {
-    // If approved, we should also update the pet status in tbl_pets
+$conn->begin_transaction();
+
+try {
+    $stmt1 = $conn->prepare("UPDATE `tbl_adoptions` SET `status` = ? WHERE `adoption_id` = ?");
+    $stmt1->bind_param("ss", $status, $adoption_id);
+    $stmt1->execute();
+
     if ($status == "Approved") {
-        $sqlgetpet = "SELECT pet_id FROM `tbl_adoptions` WHERE `adoption_id` = '$adoption_id'";
-        $result = $conn->query($sqlgetpet);
-        $row = $result->fetch_assoc();
-        $pet_id = $row['pet_id'];
+        $stmt2 = $conn->prepare("SELECT pet_id FROM `tbl_adoptions` WHERE `adoption_id` = ?");
+        $stmt2->bind_param("s", $adoption_id);
+        $stmt2->execute();
+        $row = $stmt2->get_result()->fetch_assoc();
         
-        // Mark the pet as Adopted so it doesn't show in the main list
-        $conn->query("UPDATE `tbl_pets` SET `status` = 'Adopted' WHERE `pet_id` = '$pet_id'");
+        if ($row) {
+            $pet_id = $row['pet_id'];
+
+            $stmt3 = $conn->prepare("UPDATE `tbl_pets` SET `pet_status` = 'Adopted' WHERE `pet_id` = ?");
+            $stmt3->bind_param("s", $pet_id);
+            $stmt3->execute();
+
+            $stmt4 = $conn->prepare("UPDATE `tbl_adoptions` SET `status` = 'Rejected' WHERE `pet_id` = ? AND `adoption_id` != ? AND `status` = 'Pending'");
+            $stmt4->bind_param("ss", $pet_id, $adoption_id);
+            $stmt4->execute();
+        }
     }
+
+    $conn->commit();
     echo json_encode(['status' => 'success']);
-} else {
-    echo json_encode(['status' => 'failed']);
+} catch (Exception $e) {
+    $conn->rollback();
+    echo json_encode(['status' => 'failed', 'message' => $e->getMessage()]);
 }
 ?>

@@ -27,12 +27,15 @@ $category = $conn->real_escape_string($_POST['category']);
 $description = $conn->real_escape_string($_POST['description']);
 $lat = $conn->real_escape_string($_POST['lat']);
 $lng = $conn->real_escape_string($_POST['lng']);
+$pet_gender = $conn->real_escape_string($_POST['pet_gender']);
+$pet_age = $conn->real_escape_string($_POST['pet_age']);
+$pet_health = $conn->real_escape_string($_POST['pet_health']);
 
 $image_paths = array();
 $base_upload_dir = "../uploads/pets/"; 
 
-$sqlinsert = "INSERT INTO `tbl_pets` (`user_id`, `pet_name`, `pet_type`, `category`, `description`, `lat`, `lng`, `image_paths`) 
-              VALUES ('$user_id', '$pet_name', '$pet_type', '$category', '$description', '$lat', '$lng', '')"; 
+$sqlinsert = "INSERT INTO `tbl_pets` (`user_id`, `pet_name`, `pet_type`, `pet_gender`, `pet_age`, `pet_health`, `category`, `description`, `lat`, `lng`, `image_paths`) 
+              VALUES ('$user_id', '$pet_name', '$pet_type', '$pet_gender', '$pet_age', '$pet_health', '$category', '$description', '$lat', '$lng', '')"; 
 
 try {
     if ($conn->query($sqlinsert) === TRUE) {
