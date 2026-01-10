@@ -25,7 +25,7 @@ class _AidDonationPageState extends State<AidDonationPage> {
   final TextEditingController _itemController = TextEditingController();
   final _quantityController = TextEditingController();
   final _descController = TextEditingController();
-  String _deliveryMethod = 'Drop-off'; // Default value
+  String _deliveryMethod = 'Drop-off';
 
   void _submitAidDonation() {
     String itemName = _itemController.text;

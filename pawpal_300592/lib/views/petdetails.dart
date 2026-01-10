@@ -224,7 +224,7 @@ class _PetDetailsState extends State<PetDetails> {
           top: 20,
         ),
         child: Form(
-          key: _adoptionFormKey, // Attach the key here
+          key: _adoptionFormKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,11 +260,9 @@ class _PetDetailsState extends State<PetDetails> {
               ),
               const SizedBox(height: 20),
               TextFormField(
-                // Changed from TextField to TextFormField
                 controller: _messageController,
                 maxLines: 5,
-                autovalidateMode: AutovalidateMode
-                    .onUserInteraction, // Shows error as they type
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return "Please enter your message to the owner";
@@ -283,7 +281,6 @@ class _PetDetailsState extends State<PetDetails> {
                   ),
                   filled: true,
                   fillColor: Colors.grey.shade50,
-                  // Styling for the error message itself
                   errorStyle: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
@@ -299,7 +296,6 @@ class _PetDetailsState extends State<PetDetails> {
                       width: 2,
                     ),
                   ),
-                  // Red border when validation fails
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: const BorderSide(color: Colors.red, width: 1),
@@ -336,7 +332,6 @@ class _PetDetailsState extends State<PetDetails> {
                         ),
                       ),
                       onPressed: () {
-                        // Trigger validation check
                         if (_adoptionFormKey.currentState!.validate()) {
                           _submitAdoptionRequest();
                         }

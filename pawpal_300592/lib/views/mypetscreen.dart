@@ -599,13 +599,6 @@ class _MyPetScreenState extends State<MyPetScreen> {
     return false;
   }
 
-  // Helper to keep code clean
-  void _showErrorSnackBar(String msg) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
-  }
-
   void _confirmAction({
     required BuildContext context,
     required String title,
