@@ -46,6 +46,7 @@ class _MyDonationScreenState extends State<MyDonationScreen> {
             setState(() => isLoading = false);
           }
         })
+        // ignore: invalid_return_type_for_catch_error
         .catchError((_) => setState(() => isLoading = false));
   }
 

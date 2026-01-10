@@ -5,6 +5,7 @@ import 'package:pawpal_300592/models/pet.dart';
 import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
 import 'package:pawpal_300592/views/loginpage.dart';
+import 'package:pawpal_300592/views/select_donation.dart';
 
 class PetDetails extends StatefulWidget {
   final Pet pet;
@@ -25,6 +26,7 @@ class _PetDetailsState extends State<PetDetails> {
 
   @override
   Widget build(BuildContext context) {
+    bool isOwner = widget.user?.userId == widget.pet.userId;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.pet.petName ?? "Pet Details"),
@@ -89,6 +91,7 @@ class _PetDetailsState extends State<PetDetails> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text("User ID: ${widget.pet.userId}"),
+                  Text("Name: ${widget.user?.name}"),
 
                   const SizedBox(height: 20),
                   const Text(
@@ -97,41 +100,72 @@ class _PetDetailsState extends State<PetDetails> {
                   ),
                   Text(widget.pet.description ?? "No description provided."),
 
-                  const SizedBox(height: 30),
+                  if (!isOwner) ...[
+                    const SizedBox(height: 30),
 
-                  // BUTTON 1: REQUEST TO ADOPT (Always visible)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1F3C88),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      onPressed: _showAdoptionForm,
-                      child: const Text(
-                        "Request to Adopt",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-                  ),
-
-                  // BUTTON 2: DONATION (Conditional - only for donation requests)
-                  if (widget.pet.category == "Donation Request") ...[
-                    const SizedBox(height: 10),
+                    // BUTTON 1: REQUEST TO ADOPT (Always visible)
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF1F3C88)),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F3C88),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
-                        onPressed: _showDonationForm,
+                        onPressed: _showAdoptionForm,
                         child: const Text(
-                          "Donate Help (Food/Med/Cash)",
-                          style: TextStyle(
-                            color: Color(0xFF1F3C88),
-                            fontSize: 16,
+                          "Request to Adopt",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
+                    ),
+
+                    // BUTTON 2: DONATION (Conditional - only for donation requests)
+                    if (widget.pet.category == "Donation Request") ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF1F3C88)),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
                           ),
+                          onPressed: () {
+                            // First check if user is logged in
+                            if (widget.user?.userId == '0' ||
+                                widget.user == null) {
+                              _showLoginDialog();
+                            } else {
+                              // Navigate to your new selection page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SelectDonationPage(
+                                    pet: widget.pet,
+                                    user: widget.user!,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text(
+                            "Donate Help (Food/Med/Cash)",
+                            style: TextStyle(
+                              color: Color(0xFF1F3C88),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                  if (isOwner) ...[
+                    const SizedBox(height: 30),
+                    const Center(
+                      child: Text(
+                        "This is your own pet.",
+                        style: TextStyle(
+                          color: Colors.blueGrey,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ),

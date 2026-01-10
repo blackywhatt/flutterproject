@@ -23,7 +23,7 @@ class _MainScreenState extends State<MainScreen> {
   final ScrollController _scrollController = ScrollController();
   TextEditingController searchController = TextEditingController();
   String selectedType = "All";
-  List<String> petTypes = ["All", "Cat", "Dog", "Other"];
+  List<String> petTypes = ["All", "Cat", "Dog", "Rabbit", "Other"];
 
   @override
   void initState() {
@@ -95,14 +95,13 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
                     onSubmitted: (_) {
-                      setState(() {
-                        curpage = 1;
-                      });
+                      setState(() => curpage = 1);
                       _loadPublicPets();
                     },
                   ),
                 ),
                 const SizedBox(width: 10),
+
                 DropdownButton<String>(
                   value: selectedType,
                   items: petTypes.map((String type) {
@@ -111,6 +110,22 @@ class _MainScreenState extends State<MainScreen> {
                   onChanged: (value) {
                     setState(() {
                       selectedType = value!;
+                      curpage =
+                          1; // Resets pagination so you don't get stuck on an empty page
+                    });
+                    _loadPublicPets();
+                  },
+                ),
+
+                const SizedBox(width: 5),
+
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.redAccent),
+                  tooltip: "Clear All Filters",
+                  onPressed: () {
+                    setState(() {
+                      searchController.clear();
+                      selectedType = "All";
                       curpage = 1;
                     });
                     _loadPublicPets();
@@ -129,7 +144,7 @@ class _MainScreenState extends State<MainScreen> {
                     padding: const EdgeInsets.all(10),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // 2 cards per row
+                          crossAxisCount: 2,
                           childAspectRatio: 0.75,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
@@ -313,13 +328,17 @@ class _MainScreenState extends State<MainScreen> {
                       onPressed: () {
                         setState(() {
                           curpage = index + 1;
-                          _loadPublicPets(); // Reload data for the new page
+                          _loadPublicPets();
+                        });
+
+                        // Add this to jump back to the top of the list
+                        if (_scrollController.hasClients) {
                           _scrollController.animateTo(
                             0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeIn,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
                           );
-                        });
+                        }
                       },
                       child: Text(
                         '${index + 1}',

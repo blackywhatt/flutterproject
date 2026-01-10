@@ -10,6 +10,7 @@ import 'package:pawpal_300592/models/user.dart';
 import 'package:pawpal_300592/myconfig.dart';
 import 'package:pawpal_300592/shared/mydrawer.dart';
 
+// ignore: must_be_immutable
 class ProfilePage extends StatefulWidget {
   User user;
   ProfilePage({super.key, required this.user});
