@@ -17,7 +17,7 @@ class PetDetails extends StatefulWidget {
 
 class _PetDetailsState extends State<PetDetails> {
   final TextEditingController _messageController = TextEditingController();
-
+  final _formKey = GlobalKey<FormState>();
   // Controllers for Donation Form
   final TextEditingController _donationAmountController =
       TextEditingController();
@@ -323,82 +323,215 @@ class _PetDetailsState extends State<PetDetails> {
 
   // Task Requirement: Adoption Form with Validation
   void _showAdoptionForm() {
-    print("Current User ID in PetDetails: ${widget.user?.userId}");
     if (widget.user?.userId == '0' || widget.user == null) {
-      _showLoginDialog(); // Better than SnackBar
+      _showLoginDialog();
       return;
     }
+
+    // Define a local key for this specific form instance
+    final GlobalKey<FormState> _adoptionFormKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Adoption Request",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _messageController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: "Why do you want to adopt this pet?",
-                border: OutlineInputBorder(),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Form(
+          key: _adoptionFormKey, // Attach the key here
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: _submitAdoptionRequest,
-              child: const Text("Submit Request"),
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Icon(Icons.favorite, color: Colors.redAccent),
+                  const SizedBox(width: 10),
+                  Text(
+                    "Adopt ${widget.pet.petName}",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Please tell the owner a bit about yourself and your home environment.",
+                style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                // Changed from TextField to TextFormField
+                controller: _messageController,
+                maxLines: 5,
+                autovalidateMode: AutovalidateMode
+                    .onUserInteraction, // Shows error as they type
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Please enter your message to the owner";
+                  }
+                  if (value.trim().length < 10) {
+                    return "Your message is too short (min. 10 characters)";
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText:
+                      "Example: I have a large fenced yard and work from home...",
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 13,
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  // Styling for the error message itself
+                  errorStyle: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF1F3C88),
+                      width: 2,
+                    ),
+                  ),
+                  // Red border when validation fails
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: Colors.red, width: 1),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Maybe Later"),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F3C88),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        // Trigger validation check
+                        if (_adoptionFormKey.currentState!.validate()) {
+                          _submitAdoptionRequest();
+                        }
+                      },
+                      child: const Text(
+                        "Send Request",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   void _submitAdoptionRequest() async {
-    String message = _messageController.text;
+    String message = _messageController.text.trim();
 
-    // Task Requirement: Validation
-    if (message.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please write a message")));
-      return;
+    try {
+      http
+          .post(
+            Uri.parse("${MyConfig.baseUrl}/pawpal/api/submit_adoption.php"),
+            body: {
+              "pet_id": widget.pet.petId,
+              "requester_id": widget.user!.userId,
+              "owner_id": widget.pet.userId,
+              "message": message,
+            },
+          )
+          .then((response) {
+            if (response.statusCode == 200) {
+              var data = jsonDecode(response.body);
+              if (data['status'] == 'success') {
+                _messageController.clear();
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Application submitted successfully!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "Failed: ${data['message'] ?? 'Error occurred'}",
+                    ),
+                  ),
+                );
+              }
+            }
+          });
+    } catch (e) {
+      debugPrint("Adoption Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Connection error. Please try again later."),
+        ),
+      );
     }
-
-    // Insert request into tbl_adoptions via API
-    http
-        .post(
-          Uri.parse("${MyConfig.baseUrl}/pawpal/api/submit_adoption.php"),
-          body: {
-            "pet_id": widget.pet.petId,
-            "requester_id": widget.user!.userId,
-            "owner_id": widget.pet.userId,
-            "message": message,
-          },
-        )
-        .then((response) {
-          var data = jsonDecode(response.body);
-          if (data['status'] == 'success') {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Request sent successfully!")),
-            );
-          }
-        });
   }
 
   void _showLoginDialog() {
