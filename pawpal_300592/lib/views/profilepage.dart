@@ -119,7 +119,6 @@ class _ProfilePageState extends State<ProfilePage> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('user', jsonEncode(updatedUser.toJson()));
 
-          // Update UI
           setState(() {
             widget.user = updatedUser;
             _loadUserData();

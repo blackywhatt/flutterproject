@@ -77,7 +77,6 @@ class _PetDetailsState extends State<PetDetails> {
                     ],
                   ),
 
-                  // ------------------------------
                   const Divider(height: 40),
 
                   const Text(
